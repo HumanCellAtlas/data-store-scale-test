@@ -1,0 +1,1 @@
+from tests.locustfiles.postsearch_locust import SearchUser

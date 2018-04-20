@@ -1,14 +1,7 @@
-import os
-import json
+from hca.config import get_config
 from hca.dss import DSSClient
 from locust import Locust
 from locust.clients import HttpSession
-
-os.environ["HOME"] = "/tmp"
-os.environ["HCA_CONFIG_FILE"] = "/tmp/config.json"
-
-with open(os.environ["HCA_CONFIG_FILE"], "w") as fh:
-    fh.write(json.dumps({"DSSTestClient": {"swagger_url": os.environ["SWAGGER_URL"]}}))
 
 class DSSTestClient(DSSClient):
     def get_session(self):
@@ -20,4 +13,6 @@ class DSSTestClient(DSSClient):
 class DSSLocust(Locust):
     def __init__(self, *args, **kwargs):
         super(DSSLocust, self).__init__(*args, **kwargs)
-        self.client = DSSTestClient()
+        config = get_config()
+        config.update({"DSSTestClient":{"swagger_url": self.host+"swagger.json"}})
+        self.client = DSSTestClient(config=config)
