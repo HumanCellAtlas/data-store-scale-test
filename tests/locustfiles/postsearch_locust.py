@@ -19,18 +19,6 @@ from locust import TaskSet, task, HttpLocust
 # ES_QUERIES = [{}]
 # PAGE_SIZES = [(10, 1), (100, 3), (500, 5)]
 # OUTPUT_FORMAT = [('raw', 1), ('summary'), 5]
-#
-# def search(l):
-#     query = {}
-#     l.page = l.client.request('post', 'search', params={'replica': 'aws'}, json={'es_query': query}, name='search')
-#
-# def paged_search(l):
-#     while l.page.links.get("next", {}).get("url"):
-#         l.page = l.client.request('post', url=l.page.links["next"]["url"], name='search paged')
-#
-# def stop_paging(l):
-#     l.interrupt()
-
 
 # def get_search_params():
 #     param = {}
@@ -44,18 +32,19 @@ from locust import TaskSet, task, HttpLocust
 #     return param
 
 def _search(l):
-    query = {}
-    return l.client.request('post', 'search', params={'replica': 'aws'}, json={'es_query': query},
+    l.query = {}
+    return l.client.request('post', 'search', params={'replica': 'aws'}, json={'es_query': l.query},
                                     name='search')
 def _get_page(l):
     if l.page.links.get("next", {}).get("url"):
-        return l.client.request('post', url=l.page.links["next"]["url"], name='search paged')
+        return l.client.request('post', url=l.page.links["next"]["url"], json={'es_query': l.query},
+                                name='search paged')
     l.interrupt()
 
 class SearchTaskSet(TaskSet):
-    # @task(3)
-    # def search(self):
-    #     _search(self)
+    @task(3)
+    def search(self):
+        _search(self)
 
     @task(1)
     class Paging(TaskSet):
@@ -66,21 +55,18 @@ class SearchTaskSet(TaskSet):
         def get_page(self):
             self.page = _get_page(self)
 
-    # @task(2)
-    # class PagingIncomplete(TaskSet):
-    #     def on_start(self):
-    #         self.page = _search(self)
-    #
-    #     @task(5)
-    #     def get_page(self):
-    #         self.page = _get_page(self)
-    #
-    #     @task(3)
-    #     def stop_paging(self):
-    #         self.interrupt()
+    @task(2)
+    class PagingIncomplete(TaskSet):
+        def on_start(self):
+            self.page = _search(self)
 
+        @task(5)
+        def get_page(self):
+            self.page = _get_page(self)
 
-
+        @task(3)
+        def stop_paging(self):
+            self.interrupt()
 
 class SearchUser(HttpLocust):
     min_wait = 500
