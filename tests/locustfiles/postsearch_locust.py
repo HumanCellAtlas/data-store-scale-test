@@ -31,15 +31,17 @@ from locust import TaskSet, task, HttpLocust
 #     # TODO format
 #     return param
 
-def _search(l):
+def _search(l: HttpLocust):
     l.query = {}
-    return l.client.request('post', 'search', params={'replica': 'aws'}, json={'es_query': l.query},
-                                    name='search')
-def _get_page(l):
+    return l.client.request('post', 'search', params={'replica': 'aws'}, json={'es_query': l.query}, name='search')
+
+
+def _get_page(l: HttpLocust):
     if l.page.links.get("next", {}).get("url"):
         return l.client.request('post', url=l.page.links["next"]["url"], json={'es_query': l.query},
                                 name='search paged')
     l.interrupt()
+
 
 class SearchTaskSet(TaskSet):
     @task(3)
@@ -68,8 +70,8 @@ class SearchTaskSet(TaskSet):
         def stop_paging(self):
             self.interrupt()
 
+
 class SearchUser(HttpLocust):
     min_wait = 500
     max_wait = 3000
     task_set = SearchTaskSet
-
