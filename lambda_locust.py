@@ -11,11 +11,11 @@ import json
 from invokust import create_settings, LocustLoadTest, get_lambda_runtime_info
 import tests
 
-# os.environ["HOME"] = "/tmp"
-# os.environ["HCA_CONFIG_FILE"] = "/tmp/config.json"
-#
-# with open(os.environ["HCA_CONFIG_FILE"], "w") as fh:
-#     fh.write(json.dumps({}))
+os.environ["HOME"] = "/tmp"
+os.environ["HCA_CONFIG_FILE"] = "/tmp/config.json"
+
+with open(os.environ["HCA_CONFIG_FILE"], "w") as fh:
+    fh.write(json.dumps({}))
 
 def handler(event=None, context=None):
     logging.warning(f"event: {event}")

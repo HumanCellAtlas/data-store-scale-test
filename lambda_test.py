@@ -8,7 +8,7 @@ client = session.client('lambda', config=config)
 
 lambda_payload = {
     # 'locustfile': 'postsearch_locust.py',
-    'classes': ['SearchUser'],
+    'classes': ['SearchUser2'],
     'host': 'https://tsmith1.ucsc-cgp-dev.org/v1/',
     'num_requests': '100',
     'num_clients': '5',
