@@ -18,13 +18,13 @@ from locust import TaskSet, task, HttpLocust
 #     return param
 
 from tests.common.utils import UrlBuilder
-
+from tests.common import get_replica
 
 class SearchActions(TaskSet):
     def _search(self):
         self.query = {}
-        return self.client.request('post', 'search', params={'replica': 'aws'}, json={'es_query': self.query}, name='search')
-
+        return self.client.request('post', 'search', params={'replica': get_replica()}, json={'es_query': self.query},
+                                   name='search')
 
     def _get_page(self):
         if self.page.links.get("next", {}).get("url"):
@@ -40,6 +40,9 @@ class SearchTaskSet(SearchActions):
 
     @task(1)
     class Paging(SearchActions):
+        min_wait = 500
+        max_wait = 1000
+
         def on_start(self):
             self.page = self._search()
 

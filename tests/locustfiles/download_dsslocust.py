@@ -2,10 +2,11 @@ from random import choice
 from locust import task, TaskSet
 from tempfile import TemporaryDirectory
 from tests.common.dsslocust import DSSLocust
+from tests.common import get_replica
 
 class DownloadTaskSet(TaskSet):
     def on_start(self):
-        self.replica = choice(['aws', 'gcp'])
+        self.replica = get_replica()
         self.resp_obj = self.client.post_search(es_query={}, replica= self.replica)
 
     @task(1)
