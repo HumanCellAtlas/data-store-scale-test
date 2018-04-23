@@ -20,19 +20,6 @@ from locust import TaskSet, task, HttpLocust
 from tests.common.utils import UrlBuilder
 
 
-def _download_bundle(l: HttpLocust, url: str=None, bundle_uuid: str=None, version: str=None, replica: str=None):
-    name = "DLBundle"
-    if url:
-        resp_obj = l.client.get(url, name=name)
-    else:
-        assert all([bundle_uuid, version, replica])
-        url = str(UrlBuilder.set(path="/v1/bundles/" + bundle_uuid)
-                            .add_query("replica", replica.name)
-                            .add_query("version", version))
-        resp_obj = l.client.get(url, name=name)
-    return resp_obj
-
-
 class SearchActions(TaskSet):
     def _search(self):
         self.query = {}
@@ -49,25 +36,25 @@ class SearchActions(TaskSet):
 class SearchTaskSet(SearchActions):
     @task(3)
     def search(self):
-        self._search(self)
+        self._search()
 
     @task(1)
     class Paging(SearchActions):
         def on_start(self):
-            self.page = self._search(self)
+            self.page = self._search()
 
         @task(1)
         def get_page(self):
-            self.page = self._get_page(self)
+            self.page = self._get_page()
 
     @task(2)
     class PagingIncomplete(SearchActions):
         def on_start(self):
-            self.page = self._search(self)
+            self.page = self._search()
 
         @task(5)
         def get_page(self):
-            self.page = self._get_page(self)
+            self.page = self._get_page()
 
         @task(3)
         def stop_paging(self):

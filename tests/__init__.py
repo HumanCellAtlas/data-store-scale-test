@@ -1,2 +1,2 @@
 from tests.locustfiles.postsearch_httplocust import SearchUser
-from tests.locustfiles.postsearch_dsslocust import SearchUser2
+from tests.locustfiles.download_dsslocust import DownloadUser
