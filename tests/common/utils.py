@@ -2,7 +2,7 @@ from random import choices
 from typing import Any, Tuple
 import typing
 from urllib.parse import SplitResult, urlencode, urlunsplit
-
+from jsongen import HCAJsonGenerator
 def weighted_choices(weighted_pool: Tuple[Any, int], **kwargs) -> Any:
     pool, weights = zip(*weighted_pool)
     return choices(pool, weights=weights, **kwargs)
@@ -51,3 +51,17 @@ class UrlBuilder:
         result = self.splitted._replace(query=urlencode(self.query, doseq=True))
 
         return urlunsplit(result)
+
+schema_urls = [
+    "https://schema.humancellatlas.org/bundle/5.1.0/project",
+    "https://schema.humancellatlas.org/bundle/5.1.0/submission",
+    "https://schema.humancellatlas.org/bundle/5.1.0/ingest_audit",
+]
+
+json_faker = None
+
+def generate_sample() -> str:
+    global json_faker
+    if json_faker is None:
+        json_faker = HCAJsonGenerator(schema_urls)
+    return json_faker.generate()

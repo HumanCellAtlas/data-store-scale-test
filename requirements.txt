@@ -1,3 +1,4 @@
 hca >= 3.2.0
 locustio >= 0.8a2
 invokust >= 0.44
+git+git://github.com/HumanCellAtlas/dcp-pyjsongen@master#egg=pyjsongen
