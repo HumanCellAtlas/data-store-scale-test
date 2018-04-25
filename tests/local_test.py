@@ -1,16 +1,15 @@
 import invokust
 import json
-import tests
+import locustfiles
 import os
 
-os.environ["HOME"] = "/tmp"
-os.environ["HCA_CONFIG_FILE"] = "/tmp/config.json"
+import unittest
 
-with open(os.environ["HCA_CONFIG_FILE"], "w") as fh:
-    fh.write(json.dumps({}))
 
+class test_users(unittest.TestCase):
+    
 settings = invokust.create_settings(
-    classes=[tests.SearchUser2],
+    classes=[locustfiles.DownloadUser],
     host='https://tsmith1.ucsc-cgp-dev.org/v1/',
     num_requests=10,
     num_clients=1,

@@ -2,9 +2,9 @@ import os
 
 from locust import task, TaskSet
 from tempfile import TemporaryDirectory, NamedTemporaryFile
-from tests.common.dsslocust import DSSLocust
-from tests.common import get_replica, STAGING_BUCKET, ASYNC_COPY_THRESHOLD
-from tests.common.utils import generate_sample
+from locustfiles.common.dsslocust import DSSLocust
+from locustfiles.common import get_replica, STAGING_BUCKET, ASYNC_COPY_THRESHOLD
+from locustfiles.common.utils import generate_sample
 
 
 class UploadTaskSet(TaskSet):

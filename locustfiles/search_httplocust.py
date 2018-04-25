@@ -17,7 +17,7 @@ from locust import TaskSet, task, HttpLocust
 #     # TODO format
 #     return param
 
-from tests.common import get_replica
+from locustfiles.common import get_replica
 
 class SearchActions(TaskSet):
     def _search(self):

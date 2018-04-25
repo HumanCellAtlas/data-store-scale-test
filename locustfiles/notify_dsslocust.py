@@ -1,9 +1,14 @@
 from locust import task, TaskSet
 from tempfile import TemporaryDirectory
-from tests.common.dsslocust import DSSLocust
-from tests.common import get_replica
+from locustfiles.common.dsslocust import DSSLocust
+from locustfiles.common import get_replica
 
-class UploadTaskSet(TaskSet):
+class NotifyTaskSet(TaskSet):
+
+    # create a subscription to a replica
+    # start a listener to get notification
+    # upload documents that match subscription.
+
     def on_start(self):
         self.replica = get_replica()
         self.client.request("put", )
@@ -27,7 +32,7 @@ class UploadTaskSet(TaskSet):
         pass
 
 
-class UploadUser(DSSLocust):
+class NotifiedUser(DSSLocust):
     min_wait = 500
     max_wait = 3000
-    task_set = UploadTaskSet
+    task_set = NotifyTaskSet

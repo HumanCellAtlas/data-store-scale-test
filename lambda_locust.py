@@ -9,7 +9,7 @@ logging.basicConfig(level=logging.DEBUG)
 
 import json
 from invokust import create_settings, LocustLoadTest, get_lambda_runtime_info
-import tests
+import locustfiles
 
 os.environ["HOME"] = "/tmp"
 os.environ["HCA_CONFIG_FILE"] = "/tmp/config.json"
@@ -21,7 +21,7 @@ def handler(event=None, context=None):
     logging.warning(f"event: {event}")
     classes = event.get('classes')
     assert isinstance(classes, list)
-    event["classes"] = [getattr(tests, obj) for obj in classes]
+    event["classes"] = [getattr(locustfiles, obj) for obj in classes]
     try:
         settings = create_settings(**event)
         loadtest = LocustLoadTest(settings)

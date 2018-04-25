@@ -1,8 +1,8 @@
 from random import choice
 from locust import task, TaskSet
 from tempfile import TemporaryDirectory
-from tests.common.dsslocust import DSSLocust
-from tests.common import get_replica
+from locustfiles.common.dsslocust import DSSLocust
+from locustfiles.common import get_replica
 
 class DownloadTaskSet(TaskSet):
     def on_start(self):

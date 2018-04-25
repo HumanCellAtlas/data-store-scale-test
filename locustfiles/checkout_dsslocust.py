@@ -1,7 +1,7 @@
 from random import choice
 from locust import task, TaskSet
-from tests.common.dsslocust import DSSLocust
-from tests.common import get_replica
+from locustfiles.common.dsslocust import DSSLocust
+from locustfiles.common import get_replica
 
 
 class CheckoutTaskSet(TaskSet):
@@ -21,7 +21,7 @@ class CheckoutTaskSet(TaskSet):
             self.interrupt()
 
 
-class DownloadUser(DSSLocust):
+class CheckoutUser(DSSLocust):
     min_wait = 500
     max_wait = 3000
     task_set = CheckoutTaskSet
