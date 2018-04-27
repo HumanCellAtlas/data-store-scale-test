@@ -16,7 +16,6 @@ class DSSTestClient(DSSClient):
         return self._session
 
 
-
 class DSSLocust(Locust):
     def __init__(self, *args, **kwargs):
         super(DSSLocust, self).__init__(*args, **kwargs)
