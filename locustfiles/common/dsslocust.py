@@ -1,31 +1,12 @@
+from gevent import monkey
+
+monkey.patch_all(thread=False)
+
 from hca.config import get_config
 from hca.dss import DSSClient
 from locust import Locust
 from locust.clients import HttpSession
 
-# from requests_oauthlib import OAuth2Session
-# from tests.common.OAuth2SessionLocust import OAuth2Session
-# from hca.util import SwaggerClient
-# class OAuth2SessionMod(HttpSession, OAuth2Session):
-#     pass
-# class SwaggerClientMod(SwaggerClient):
-#     def get_session(self):
-#         if self._session is None:
-#             self._session = HttpSession(self.host, **self._session_kwargs)
-#             self._session.headers.update({"User-Agent": self.__class__.__name__})
-#         return self._session
-
-    # def get_authenticated_session(self):
-    #     if self._authenticated_session is None:
-    #         oauth2_client_data = self.application_secrets["installed"]
-    #         if 'GOOGLE_APPLICATION_CREDENTIALS' in os.environ:
-    #             token, expires_at = self._get_oauth_token_from_service_account_credentials()
-    #             # TODO: (akislyuk) figure out the right strategy for persisting the service account oauth2 token
-    #             self._authenticated_session = OAuth2SessionMod(client_id=oauth2_client_data["client_id"],
-    #                                                         token=dict(access_token=token),
-    #                                                         **self._session_kwargs)
-    #         self._authenticated_session.headers.update({"User-Agent": self.__class__.__name__})
-    #     return self._authenticated_session
 
 class DSSTestClient(DSSClient):
     def get_session(self):
