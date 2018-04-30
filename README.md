@@ -4,7 +4,8 @@ This is a suite of scalability tests for the [Data Storage System](github.com/Hu
 storage platform used by the [Human Cell Atlas](https://www.humancellatlas.org/).
  
 
-The tests use [locust](https://docs.locust.io/en/stable/what-is-locust.html) the load testing framework and [invokust](https://github.com/FutureSharks/invokust)
+The tests use [locust](https://docs.locust.io/en/stable/what-is-locust.html) the load testing framework and 
+[invokust](https://github.com/FutureSharks/invokust)
 to run the tests using [AWS Lambdas](https://docs.aws.amazon.com/lambda/latest/dg/welcome.html).
 
 #### About the scalability testing framework

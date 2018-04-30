@@ -3,6 +3,7 @@ from locust import task, TaskSet
 from tempfile import TemporaryDirectory
 from locustfiles.common.dsslocust import DSSLocust
 from locustfiles.common import get_replica
+from locustfiles.common.queries import query_medium_files
 
 
 class DownloadTaskSet(TaskSet):
@@ -11,7 +12,7 @@ class DownloadTaskSet(TaskSet):
     """
     def on_start(self):
         self.replica = get_replica()
-        self.resp_obj = self.client.post_search(es_query={}, replica= self.replica)
+        self.resp_obj = self.client.post_search(es_query=query_medium_files, replica= self.replica)
 
     @task(1)
     def download_bundle(self):
@@ -28,7 +29,6 @@ class DownloadTaskSet(TaskSet):
                                         version=version if version else None)["bundle"]
         for file_ in bundle["files"]:
             file_uuid = file_["uuid"]
-            filename = file_.get("name", file_uuid)
             self.client.head_file(uuid=file_uuid, replica=self.replica)
 
 

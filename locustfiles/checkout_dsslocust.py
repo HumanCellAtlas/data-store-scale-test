@@ -2,6 +2,7 @@ from random import choice
 from locust import task, TaskSet
 from locustfiles.common.dsslocust import DSSLocust
 from locustfiles.common import get_replica
+from locustfiles.common.queries import query_large_files
 
 
 class CheckoutTaskSet(TaskSet):
@@ -13,16 +14,16 @@ class CheckoutTaskSet(TaskSet):
 
         def on_start(self):
             self.replica = get_replica()
-            resp_obj = self.client.post_search(es_query={}, replica= self.replica)
+            resp_obj = self.client.post_search(es_query=query_large_files, replica= self.replica)
             bundle = choice(resp_obj['results'])
             bundle_uuid, version = bundle['bundle_fqid'].split('.', 1)
             checkout_output = self.client.post_bundles_checkout(uuid=bundle_uuid, replica=self.replica,
-                                                                email='foo@example.com')
+                                                                email='foo@example.com', name='checkout')
             self.job_id = checkout_output['checkout_job_id']
 
         @task(1)
         def get_status(self):
-            resp_obj = self.client.get_bundles_checkout(checkout_job_id=self.job_id)
+            resp_obj = self.client.get_bundles_checkout(checkout_job_id=self.job_id, name='checkout_status')
             if resp_obj['status'] == 'SUCCESS':
                 self.interrupt()
 
