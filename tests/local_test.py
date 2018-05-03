@@ -1,6 +1,4 @@
 from collections import Iterable
-from gevent import monkey
-monkey.patch_all(thread=False) # must be called as early as possible
 import invokust
 import locustfiles
 
@@ -10,35 +8,55 @@ host = 'https://dss.dev.data.humancellatlas.org/v1/'
 # host = 'https://tsmith1.ucsc-cgp-dev.org/v1/'
 
 class test_users(unittest.TestCase):
-    # def test_upload(self):
-    #     self.run_locust(locustfiles.UploadUser, 'https://tsmith1.ucsc-cgp-dev.org/v1/')
-    #
+    def test_upload(self):
+        self.run_locust(locustfiles.UploadUser,
+                        host,
+                        requests=10,
+                        clients=1,
+                        hatch_rate=1)
+
     def test_download(self):
-        self.run_locust(locustfiles.DownloadUser, host, requests=5)
+        self.run_locust(locustfiles.DownloadUser,
+                        host,
+                        requests=10,
+                        clients=1,
+                        hatch_rate=1)
 
     def test_search(self):
-        self.run_locust(locustfiles.SearchUser, host,
-                        requests=100000,
-                        clients=100,
-                        hatch_rate=10,
+        self.run_locust(locustfiles.SearchUser,
+                        host,
+                        requests=10,
+                        clients=1,
+                        hatch_rate=1,
                         timeout=360)
 
     def test_checkout(self):
-        self.run_locust(locustfiles.CheckoutUser, host, requests=100, clients = 1, hatch_rate = 1)
-
-    def test_multi(self):
-        self.run_locust([locustfiles.SearchUser,locustfiles.CheckoutUser],
+        self.run_locust(locustfiles.CheckoutUser,
                         host,
-                        requests=100000,
-                        clients=100,
-                        hatch_rate=10,
+                        requests=10,
+                        clients = 1,
+                        hatch_rate = 1)
+
+    def test_notify(self):
+        self.run_locust(locustfiles.NotifiedUser,
+                        host,
+                        requests=10,
+                        clients=1,
+                        hatch_rate=1,
                         timeout=360)
 
-    #
-    # def test_notify(self):
-    #     self.run_locust(locustfiles.NotifiedUser, 'https://tsmith1.ucsc-cgp-dev.org/v1/')
+    def test_all(self):
+        self.run_locust([locustfiles.SearchUser,
+                         locustfiles.CheckoutUser,
+                         locustfiles.NotifiedUser,
+                         locustfiles.DownloadUser],
+                        host,
+                        requests=20,
+                        clients=5,
+                        hatch_rate=5,
+                        timeout=360)
 
-    def run_locust(self, user, host, requests=0, clients=1, hatch_rate=1, show=True, timeout=None):
+    def run_locust(self, user, host, requests=1, clients=1, hatch_rate=1, show=True, timeout=None):
         if not isinstance(user,Iterable):
             user = [user]
         settings = invokust.create_settings(

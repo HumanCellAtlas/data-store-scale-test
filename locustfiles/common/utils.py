@@ -1,8 +1,13 @@
 from random import choices
+from tempfile import NamedTemporaryFile
 from typing import Any, Tuple
 import typing
 from urllib.parse import SplitResult, urlencode, urlunsplit
+
+from gevent import os
 from jsongen import HCAJsonGenerator
+
+from locustfiles.common import ASYNC_COPY_THRESHOLD
 
 
 def weighted_choices(weighted_pool: Tuple[Any, int], **kwargs) -> Any:
@@ -72,3 +77,18 @@ def generate_sample() -> str:
         json_faker = HCAJsonGenerator(schema_urls)
     data = json_faker.generate()
     return json_faker.last_name, data
+
+
+def generate_metadata(dir):
+    name, data = generate_sample()
+    with NamedTemporaryFile(dir=dir, mode='w', suffix=".json", prefix=f"{name}_", delete=False) as jfh:
+        jfh.write(data)
+        jfh.flush()
+
+
+def generate_data(dir, size=ASYNC_COPY_THRESHOLD, **kwargs):
+    NTF_kwargs = {"suffix":".bin"}
+    NTF_kwargs.update(kwargs)
+    with NamedTemporaryFile(dir=dir, delete=False, **NTF_kwargs ) as fh:
+        fh.write(os.urandom(size))
+        fh.flush()
