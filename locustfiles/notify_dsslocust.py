@@ -1,7 +1,35 @@
-from locust import task, TaskSet
-from tempfile import TemporaryDirectory
-from locustfiles.common.dsslocust import DSSLocust
-from locustfiles.common import get_replica
+import uuid
+from tempfile import TemporaryDirectory, NamedTemporaryFile
+
+import time
+from gevent import os
+from hca.util import SwaggerAPIException
+
+from locustfiles.common.dsslocust import DSSLocust, DSSTestClient
+from locust import task, TaskSet, events
+import boto3
+import botocore
+from locustfiles.common import get_replica, ASYNC_COPY_THRESHOLD, STAGING_BUCKET
+from locustfiles.common.utils import generate_metadata, generate_data
+import json
+notification_bucket = 'dss-test-tsmith1'
+
+"""
+Tests:
+    x subscribers match all documents
+    create a document
+    check notifications
+    delete subscribers
+    """
+
+notification_proof = []
+
+def cleanup():
+    s3 = boto3.client('s3', config=botocore.client.Config(signature_version='s3v4'))
+    client = DSSTestClient()
+    for subscription_id, notification_key, replica in notification_proof:
+        s3.delete_object(Bucket = notification_bucket, Key = notification_key)
+        client.delete_subscription(uuid=subscription_id, replica=replica)
 
 class NotifyTaskSet(TaskSet):
 
@@ -11,62 +39,57 @@ class NotifyTaskSet(TaskSet):
     # create an s3 event trigger
 
     def on_start(self):
-        self.replica = get_replica()
-        self.client.request("put", )
-
-        # register a subscription
-        # upload a bundle
-        # check for notification
-        def _put_subscription(self):
-            resp_obj = self.assertPutResponse(
-                url,
-                requests.codes.created,
-                json_request_body=dict(
-                    es_query=self.sample_percolate_query,
-                    callback_url=self.callback_url),
-                headers=get_auth_header()
-            )
-
-            uuid_ = resp_obj.json['uuid']
-            return uuid_
+        self.replica = "aws"   # get_replica()
+        self.notification_keys = []
+        self.subscription_ids = []
+        self.bundles = []
+        self.s3 = boto3.client('s3', config=botocore.client.Config(signature_version='s3v4'))
 
 
     @task(1)
-    def upload(self):
-        pass
-
-for replica in self.replicas:
-    notification_key = f'notifications/{uuid.uuid4()}'
-    url = s3.generate_presigned_url(ClientMethod='put_object',
-                                    Params=dict(Bucket=self.notification_bucket,
-                                                Key=notification_key,
-                                                ContentType='application/json'))
-    put_response = run_for_json([f'{venv_bin}hca', 'dss', 'put-subscription',
-                                 '--callback-url', url,
-                                 '--method', 'PUT',
-                                 '--es-query', json.dumps(query),
-                                 '--replica', replica])
-    subscription_id = put_response['uuid']
-    self.addCleanup(run, f"{venv_bin}hca dss delete-subscription --replica {replica} --uuid {subscription_id}")
-    self.addCleanup(s3.delete_object, Bucket=self.notification_bucket, Key=notification_key)
-    notifications_proofs[replica] = (subscription_id, notification_key)
-    get_response = run_for_json(f"{venv_bin}hca dss get-subscription "
-                                f"--replica {replica} "
-                                f"--uuid {subscription_id}")
-    self.assertEquals(subscription_id, get_response['uuid'])
-    self.assertEquals(url, get_response['callback_url'])
-    list_response = run_for_json(f"{venv_bin}hca dss get-subscriptions --replica {replica}")
-    self.assertIn(get_response, list_response['subscriptions'])
+    def put_sub(self):
+        query = {"query": {"match_all": {}}}
+        notification_key = f'notifications/{uuid.uuid4()}'
+        self.notification_keys.append(notification_key)
+        url = self.s3.generate_presigned_url(ClientMethod='put_object',
+                                        Params=dict(Bucket=notification_bucket,
+                                                    Key=notification_key,
+                                                    ContentType='application/json'))
+        put_response = self.client.put_subscription(es_query=query,
+                                                    callback_url=url,
+                                                    replica=self.replica,
+                                                    method='PUT')
+        subscription_id = put_response['uuid']
+        self.subscription_ids.append(subscription_id)
 
 
-for replica, (subscription_id, notification_key) in notifications_proofs.items():
-    obj = s3.get_object(Bucket=self.notification_bucket, Key=notification_key)
-    notification = json.load(obj['Body'])
-    self.assertEquals(subscription_id, notification['subscription_id'])
-    self.assertEquals(bundle_uuid, notification['match']['bundle_uuid'])
-    self.assertEquals(bundle_version, notification['match']['bundle_version'])
+    def on_stop(self):
+        for subscription_id in self.subscription_ids:
+            try:
+                self.client.delete_subscription(uuid=subscription_id, replica=self.replica)
+            except SwaggerAPIException as ex:
+                pass
+
+        for notification_key in self.notification_keys:
+            try:
+                self.s3.delete_object(Bucket=notification_bucket, Key=notification_key)
+            except botocore.errorfactory.NoSuchKey:
+                pass
+
+        for bundle in self.bundles:
+            try:
+                response = self.client.delete_bundle(uuid=bundle,
+                                                     reason='Temporary load test bundle.',
+                                                     replica=self.replica)
+            except SwaggerAPIException as ex:
+                pass
+
+    def clear_subscriptions(self, replica):
+        list_response = self.client.get_subscriptions(replica=self.replica)
+        for subscription in list_response['subscriptions']:
+            self.client.delete_subscription(uuid=subscription['uuid'], replica=self.replica)
 
 class NotifiedUser(DSSLocust):
-    min_wait = 500
-    max_wait = 3000
+    min_wait = 100
+    max_wait = 100
     task_set = NotifyTaskSet
