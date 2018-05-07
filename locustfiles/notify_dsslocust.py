@@ -2,13 +2,14 @@ import uuid
 from hca.util import SwaggerAPIException
 
 from locustfiles.common.dsslocust import DSSLocust
+from locustfiles.common import get_replica
 from locust import task, TaskSet, events
 
 from locustfiles.common.notifcation_server import NotificationServer
 
 class NotifyTaskSet(TaskSet):
     def on_start(self):
-        self.replica = "aws"   # get_replica()
+        self.replica = get_replica()
         self.notification_keys = []
         self.subscription_ids = []
         events.quitting += self.clear_subscriptions(self=self)
