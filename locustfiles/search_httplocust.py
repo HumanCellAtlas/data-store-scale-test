@@ -1,6 +1,6 @@
-from random import choice
-
 from locust import TaskSet, task, HttpLocust
+
+from random import choice
 from locustfiles.common import get_replica
 from locustfiles.common.queries import query_all, query_medium_files, query_large_files
 
@@ -54,3 +54,4 @@ class SearchUser(HttpLocust):
     min_wait = 500
     max_wait = 3000
     task_set = SearchTaskSet
+

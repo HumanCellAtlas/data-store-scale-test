@@ -19,7 +19,7 @@ class UploadTaskSet(TaskSet):
             self.bundles.append(response['bundle_uuid'])
 
     # TODO delete bundles when done
-    
+
 class UploadUser(DSSLocust):
     min_wait = 500
     max_wait = 3000
