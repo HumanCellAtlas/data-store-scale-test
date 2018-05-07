@@ -1,15 +1,23 @@
 import contextlib
-from gevent import threading, time
+from gevent import threading
 from http.server import BaseHTTPRequestHandler, HTTPServer
 from locust import events
 from locust.stats import global_stats
 import socket
 import requests
-from collections import defaultdict
+
+
+def unused_tcp_port():
+    with contextlib.closing(socket.socket()) as sock:
+        sock.bind(('', 0))
+        return sock.getsockname()[1]
+
+
+def myip():
+    return requests.get('http://ip.42.pl/raw').text
 
 
 notification_event = events.EventHook()
-stats = defaultdict(lambda: 0)
 
 
 def notification_event_handler(response=None):
@@ -17,16 +25,6 @@ def notification_event_handler(response=None):
     # count the number of times a bundle is hit for a subscription_uuid
     resp = response.json()
     global_stats.get(f"notification {resp['subscription_uuid']}", 'Post').log(0, 0)
-
-
-def unused_tcp_port():
-    with contextlib.closing(socket.socket()) as sock:
-        sock.bind(('127.0.0.1', 0))
-        return sock.getsockname()[1]
-
-
-def myip():
-    return requests.get('http://ip.42.pl/raw').text
 
 
 class NotifcationHandler(BaseHTTPRequestHandler):
@@ -64,16 +62,19 @@ class NotificationServer:
             cls.url = f"http://{cls.address}:{cls.port}"
         return cls.url
 
-def start_notification_server():
-    NotificationServer.server = HTTPServer(('', NotificationServer.port), NotifcationHandler)
-    NotificationServer.thread = threading.Thread(target=NotificationServer.server.serve_forever)
-    NotificationServer.thread.start()
+    @classmethod
+    def on_locust_start_hatching(cls):
+        cls.server = HTTPServer(('', cls.port), NotifcationHandler)
+        cls.thread = threading.Thread(target=cls.server.serve_forever)
+        cls.thread.start()
 
-def shutdown_notification_server():
-    NotificationServer.server.shutdown()
+    @classmethod
+    def on_quitting(cls):
+        cls.server.shutdown()
 
-events.quitting += shutdown_notification_server
-events.locust_start_hatching += start_notification_server
+
+events.quitting += NotificationServer.on_quitting
+events.locust_start_hatching += NotificationServer.on_locust_start_hatching
 
 
 
