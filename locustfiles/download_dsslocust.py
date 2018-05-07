@@ -36,3 +36,4 @@ class DownloadUser(DSSLocust):
     min_wait = 500
     max_wait = 3000
     task_set = DownloadTaskSet
+    weight = 2

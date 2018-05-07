@@ -1,1 +1,1 @@
-from locustfiles import locustTest_1
+from locustfiles import *

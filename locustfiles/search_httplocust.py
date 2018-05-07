@@ -54,4 +54,5 @@ class SearchUser(HttpLocust):
     min_wait = 500
     max_wait = 3000
     task_set = SearchTaskSet
+    weight = 4
 

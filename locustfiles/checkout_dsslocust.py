@@ -41,3 +41,4 @@ class CheckoutUser(DSSLocust):
     min_wait = 3000
     max_wait = 3000
     task_set = CheckoutTaskSet
+    weight = 3

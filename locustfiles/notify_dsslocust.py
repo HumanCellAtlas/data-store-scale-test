@@ -40,4 +40,5 @@ class NotifiedUser(DSSLocust):
     min_wait = 500
     max_wait = 3000
     task_set = NotifyTaskSet
+    weight = 2
 

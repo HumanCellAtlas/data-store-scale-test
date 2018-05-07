@@ -39,3 +39,4 @@ class UploadUser(DSSLocust):
     min_wait = 500
     max_wait = 3000
     task_set = UploadTaskSet
+    weight = 1
