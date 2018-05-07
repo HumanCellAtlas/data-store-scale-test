@@ -11,7 +11,6 @@ class NotifyTaskSet(TaskSet):
         self.replica = "aws"   # get_replica()
         self.notification_keys = []
         self.subscription_ids = []
-        self.bundles = []
         events.quitting += self.clear_subscriptions(self=self)
 
     @task(1)
