@@ -2,7 +2,7 @@ from random import choice
 from locust import task, TaskSet
 from locustfiles.common.dsslocust import DSSLocust
 from locustfiles.common import get_replica
-from locustfiles.common.queries import query_large_files
+from locustfiles.common.queries import query_large_files, query_all
 
 
 class CheckoutTaskSet(TaskSet):
@@ -14,7 +14,7 @@ class CheckoutTaskSet(TaskSet):
 
         def on_start(self):
             self.replica = get_replica()
-            resp_obj = self.client.post_search(es_query=query_large_files, replica= self.replica)
+            resp_obj = self.client.post_search(es_query=query_all, replica= self.replica)
             bundle = choice(resp_obj['results'])
             bundle_uuid, version = bundle['bundle_fqid'].split('.', 1)
             checkout_output = self.client.post_bundles_checkout(uuid=bundle_uuid, replica=self.replica,
