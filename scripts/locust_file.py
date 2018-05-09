@@ -1,1 +1,1 @@
-from scripts.locustfiles import *
+from locustfiles import UploadUser, NotifiedUser, DownloadUser, SearchUser, CheckoutUser

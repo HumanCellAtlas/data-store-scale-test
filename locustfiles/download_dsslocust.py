@@ -2,9 +2,9 @@ from random import choice
 from locust import task, TaskSet
 from tempfile import TemporaryDirectory
 
-from scripts.locustfiles.common import get_replica
-from scripts.locustfiles.common.dsslocust import DSSLocust
-from scripts.locustfiles.common.queries import query_medium_files
+from locustfiles.common import get_replica
+from locustfiles.common.dsslocust import DSSLocust
+from locustfiles.common.queries import query_medium_files
 
 
 class DownloadTaskSet(TaskSet):
