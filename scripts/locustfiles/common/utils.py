@@ -7,7 +7,7 @@ from urllib.parse import SplitResult, urlencode, urlunsplit
 from gevent import os
 from jsongen import HCAJsonGenerator
 
-from locustfiles.common import ASYNC_COPY_THRESHOLD
+from scripts.locustfiles.common import ASYNC_COPY_THRESHOLD
 
 
 def weighted_choices(weighted_pool: Tuple[Any, int], **kwargs) -> Any:

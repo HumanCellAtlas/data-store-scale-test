@@ -1,11 +1,11 @@
 import uuid
 from hca.util import SwaggerAPIException
 
-from locustfiles.common.dsslocust import DSSLocust
-from locustfiles.common import get_replica
+from scripts.locustfiles.common.dsslocust import DSSLocust
+from scripts.locustfiles.common import get_replica
 from locust import task, TaskSet, events
 
-from locustfiles.common.notifcation_server import NotificationServer
+from scripts.locustfiles.common.notifcation_server import NotificationServer
 
 class NotifyTaskSet(TaskSet):
     def on_start(self):

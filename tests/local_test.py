@@ -1,6 +1,6 @@
 # from gevent import monkey
 # monkey.patch_all(thread=False) # must be called as early as possible
-import locustfiles
+from scripts import locustfiles
 import unittest
 
 # import invokust

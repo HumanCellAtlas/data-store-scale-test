@@ -1,5 +1,5 @@
 from locust import TaskSet
-from locustfiles.common.utils import UrlBuilder
+from scripts.locustfiles.common.utils import UrlBuilder
 
 
 class DownloadActions(TaskSet):

@@ -1,5 +1,6 @@
 # encoding: utf-8
-# from https://raw.githubusercontent.com/concurrencylabs/locust-cloudwatch/master/locust_cw.py
+# from https://github.com/concurrencylabs/locust-cloudwatch/blob/master/locust_cw.py
+
 from gevent import monkey
 monkey.patch_all()
 

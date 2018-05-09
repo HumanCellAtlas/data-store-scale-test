@@ -1,10 +1,10 @@
 import time
 
-from locustfiles.common.dsslocust import DSSLocust
+from scripts.locustfiles.common.dsslocust import DSSLocust
 from locust import task, TaskSet, events
 from tempfile import TemporaryDirectory
-from locustfiles.common import get_replica, STAGING_BUCKET, ASYNC_COPY_THRESHOLD
-from locustfiles.common.utils import generate_metadata, generate_data
+from scripts.locustfiles.common import STAGING_BUCKET, ASYNC_COPY_THRESHOLD
+from scripts.locustfiles.common.utils import generate_metadata, generate_data
 
 
 class UploadTaskSet(TaskSet):

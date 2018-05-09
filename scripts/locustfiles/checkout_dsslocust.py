@@ -1,8 +1,8 @@
 from random import choice
 from locust import task, TaskSet
-from locustfiles.common.dsslocust import DSSLocust
-from locustfiles.common import get_replica
-from locustfiles.common.queries import query_large_files, query_all
+from scripts.locustfiles.common.dsslocust import DSSLocust
+from scripts.locustfiles.common import get_replica
+from scripts.locustfiles.common.queries import query_large_files, query_all
 
 
 class CheckoutTaskSet(TaskSet):

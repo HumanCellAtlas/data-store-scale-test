@@ -1,8 +1,8 @@
 from locust import TaskSet, task, HttpLocust
 
 from random import choice
-from locustfiles.common import get_replica
-from locustfiles.common.queries import query_all, query_medium_files, query_large_files
+from scripts.locustfiles.common import get_replica
+from scripts.locustfiles.common.queries import query_all, query_medium_files, query_large_files
 
 
 def get_query():
