@@ -1,4 +1,0 @@
-{
-  "target": "https://dss.dev.data.humancellatlas.org/v1/",
-  "locusts": ["SearchUser", "UploadUser", "DownloadUser", "CheckoutUser", "NotifiedUser"]
-}
