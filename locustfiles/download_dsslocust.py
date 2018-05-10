@@ -33,8 +33,31 @@ class DownloadTaskSet(TaskSet):
             self.client.head_file(uuid=file_uuid, replica=self.replica)
 
 
+class DownloadFixedTaskSet(TaskSet):
+    """
+    Downloads a specific bundle and associated files.
+    """
+    def on_start(self):
+        self.replica = get_replica()
+        self.bundle_uuid = "ff9a4a01-cd31-45af-af96-5c62d2db987c"
+        self.version = "2017-10-24T192422.909242Z"
+
+    @task(1)
+    def download_bundle(self):
+        with TemporaryDirectory() as tmp_dir:
+            self.client.download(self.bundle_uuid,  self.replica, version=self.version, dest_name=tmp_dir)
+
+    @task(1)
+    def download_file_metadata(self):
+        bundle = self.client.get_bundle(uuid=self.bundle_uuid, replica=self.replica, version=self.version)["bundle"]
+        for file_ in bundle["files"]:
+            file_uuid = file_["uuid"]
+            self.client.head_file(uuid=file_uuid, replica=self.replica)
+
+
 class DownloadUser(DSSLocust):
     min_wait = 500
     max_wait = 3000
     task_set = DownloadTaskSet
     weight = 2
+
