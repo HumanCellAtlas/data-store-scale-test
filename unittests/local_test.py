@@ -1,13 +1,12 @@
-# from gevent import monkey
-# monkey.patch_all(thread=False) # must be called as early as possible
+from gevent import monkey
+monkey.patch_all(thread=False) # must be called as early as possible
 import locustfiles
 import unittest
-
 # import invokust
 # from collections import Iterable
 
-# host = 'https://dss.dev.data.humancellatlas.org/v1/'
-host = 'https://tsmith1.ucsc-cgp-dev.org/v1/'
+host = 'https://dss.dev.data.humancellatlas.org/v1/'
+# host = 'https://tsmith1.ucsc-cgp-dev.org/v1/'
 
 
 class test_users(unittest.TestCase):
@@ -22,11 +21,23 @@ class test_users(unittest.TestCase):
     def test_download_user(self):
         self.run_user(locustfiles.DownloadUser, timeout=5)
 
+    def test_download_fixed(self):
+        class DownloadFixedUser(locustfiles.DSSLocust):
+            min_wait = 500
+            max_wait = 3000
+            task_set = locustfiles.DownloadFixedTaskSet
+
+        self.run_user(DownloadFixedUser, timeout=5)
+
     def test_search_user(self):
         self.run_user(locustfiles.SearchUser, timeout=5)
 
     def test_checkout_user(self):
-        self.run_user(locustfiles.CheckoutUser, timeout=5)
+        class CheckoutUser(locustfiles.DSSLocust):
+            min_wait = 3000
+            max_wait = 3000
+            task_set = locustfiles.CheckoutTaskSet
+        self.run_user(CheckoutUser, timeout=5)
 
     def test_notify_user(self):
         self.run_user(locustfiles.NotifiedUser, timeout=5)
