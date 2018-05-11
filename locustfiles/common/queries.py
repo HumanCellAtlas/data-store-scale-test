@@ -12,7 +12,7 @@ query_medium_files = {
     "query": {
         "range" : {
             "manifest.files.size" : {
-                "gte" : 40000000,
+                "gte" : 67108865,
                 "lte" : 70000000
             }
         }

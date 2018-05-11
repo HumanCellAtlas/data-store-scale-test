@@ -9,7 +9,7 @@ from locustfiles.common.queries import query_medium_files
 
 class DownloadTaskSet(TaskSet):
     """
-    Downloads a bundle and associated files.
+    Downloads a random bundle and associated files.
     """
     def on_start(self):
         self.replica = get_replica()
@@ -36,23 +36,32 @@ class DownloadTaskSet(TaskSet):
 class DownloadFixedTaskSet(TaskSet):
     """
     Downloads a specific bundle and associated files.
+    These tests are specific to 'https://dss.dev.data.humancellatlas.org/v1/'. You will need to change the bundles used
+    to match a large and medium sized bundle in your specific deployment.
     """
     def on_start(self):
         self.replica = get_replica()
-        self.bundle_uuid = "ff9a4a01-cd31-45af-af96-5c62d2db987c"
-        self.version = "2017-10-24T192422.909242Z"
+
+    @task(2)
+    def download_medium_sized_bundle(self):
+        self.download(bundle_uuid = "ff9a4a01-cd31-45af-af96-5c62d2db987c",
+                      version = "2017-10-24T192422.909242Z")
 
     @task(1)
-    def download_bundle(self):
-        with TemporaryDirectory() as tmp_dir:
-            self.client.download(self.bundle_uuid,  self.replica, version=self.version, dest_name=tmp_dir)
+    def download_large_sized_bundle(self):
+        self.download(bundle_uuid = "b79884f2-1c34-4c7d-8073-2a30cc6522a7",
+                      version="2018-01-30T021559.657417Z")
 
-    @task(1)
+    @task(3)
     def download_file_metadata(self):
         bundle = self.client.get_bundle(uuid=self.bundle_uuid, replica=self.replica, version=self.version)["bundle"]
         for file_ in bundle["files"]:
             file_uuid = file_["uuid"]
             self.client.head_file(uuid=file_uuid, replica=self.replica)
+
+    def download(self, bundle_uuid, version):
+        with TemporaryDirectory() as tmp_dir:
+            self.client.download(bundle_uuid,  self.replica, version=version, dest_name=tmp_dir)
 
 
 class DownloadUser(DSSLocust):
