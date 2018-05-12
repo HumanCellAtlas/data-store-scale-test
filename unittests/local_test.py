@@ -1,12 +1,16 @@
 from gevent import monkey
 monkey.patch_all(thread=False) # must be called as early as possible
+import os
+
+host = 'https://tsmith1.ucsc-cgp-dev.org/v1/'
+# host = 'https://dss.dev.data.humancellatlas.org/v1/'
+os.environ['TARGET_URL'] = 'https://tsmith1.ucsc-cgp-dev.org/v1/'
+
 import locustfiles
+from locust import HttpLocust, events
 import unittest
 # import invokust
 # from collections import Iterable
-
-host = 'https://dss.dev.data.humancellatlas.org/v1/'
-# host = 'https://tsmith1.ucsc-cgp-dev.org/v1/'
 
 
 class test_users(unittest.TestCase):
@@ -14,6 +18,12 @@ class test_users(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
         cls.host = host
+
+    def setUp(self):
+        events.locust_start_hatching.fire()
+
+    def tearDown(self):
+        events.quitting.fire()
 
     def test_upload_user(self):
         self.run_user(locustfiles.UploadUser, timeout=5)
