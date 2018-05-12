@@ -33,9 +33,14 @@ class DSSTestClient(DSSClient):
         return self._authenticated_session
 
 
+def get_DSSClient(host):
+    config = get_config()
+    config.update({"DSSTestClient": {"swagger_url": host + "swagger.json"}})
+    return DSSTestClient(config=config)
+
+
 class DSSLocust(Locust):
     def __init__(self, *args, **kwargs):
         super(DSSLocust, self).__init__(*args, **kwargs)
-        config = get_config()
-        config.update({"DSSTestClient":{"swagger_url": self.host+"swagger.json"}})
-        self.client = DSSTestClient(config=config)
+        self.client = get_DSSClient(self.host)
+
