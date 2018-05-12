@@ -1,5 +1,7 @@
 from gevent import monkey
+
 monkey.patch_all(thread=False) # must be called as early as possible
+
 import os
 
 host = 'https://tsmith1.ucsc-cgp-dev.org/v1/'
@@ -26,38 +28,32 @@ class test_users(unittest.TestCase):
         events.quitting.fire()
 
     def test_upload_user(self):
-        self.run_user(locustfiles.UploadUser, timeout=5)
+        self.run_user(locustfiles.DSSLocust, locustfiles.UploadTaskSet)
 
     def test_download_user(self):
-        self.run_user(locustfiles.DownloadUser, timeout=5)
+        self.run_user(locustfiles.DSSLocust, locustfiles.DownloadTaskSet)
 
     def test_download_fixed(self):
-        class DownloadFixedUser(locustfiles.DSSLocust):
-            min_wait = 500
-            max_wait = 3000
-            task_set = locustfiles.DownloadFixedTaskSet
-
-        self.run_user(DownloadFixedUser, timeout=5)
+        self.run_user(locustfiles.DSSLocust, locustfiles.DownloadFixedTaskSet, stop_timeout_=30)
 
     def test_search_user(self):
-        self.run_user(locustfiles.SearchUser, timeout=5)
+        self.run_user(HttpLocust, locustfiles.SearchTaskSet)
 
     def test_checkout_user(self):
-        class CheckoutUser(locustfiles.DSSLocust):
-            min_wait = 3000
-            max_wait = 3000
-            task_set = locustfiles.CheckoutTaskSet
-        self.run_user(CheckoutUser, timeout=5)
+        self.run_user(locustfiles.DSSLocust, locustfiles.CheckoutTaskSet)
 
     def test_notify_user(self):
-        self.run_user(locustfiles.NotifiedUser, timeout=5)
+        self.run_user(locustfiles.DSSLocust, locustfiles.NotifyTaskSet, stop_timeout_=40)
 
-    def run_user(self, user_class, timeout=None):
-        user_class.host = self.host
-        user_class.stop_timeout = timeout
+    def run_user(self, locust_type, task_set_, stop_timeout_=5, min_wait_=1000, max_wait_=3000):
+        class user_class(locust_type):
+            host = self.host
+            stop_timeout = stop_timeout_
+            min_wait = min_wait_
+            max_wait = max_wait_
+            task_set = task_set_
         user = user_class()
         user.run()
-
 
 # class test_locust(unittest.TestCase):
 #
