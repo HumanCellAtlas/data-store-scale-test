@@ -63,14 +63,14 @@ class NotificationServer:
         return cls.url
 
     @classmethod
-    def on_locust_start_hatching(cls):
+    def on_locust_start_hatching(cls, **kwargs):
         if cls.thread is None or not cls.thread.is_alive():
             cls.server = HTTPServer(('', cls.port), NotifcationHandler)
             cls.thread = threading.Thread(target=cls.server.serve_forever)
             cls.thread.start()
 
     @classmethod
-    def on_quitting(cls):
+    def on_quitting(cls, **kwargs):
         cls.server.shutdown()
 
 
