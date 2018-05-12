@@ -1,0 +1,8 @@
+DSS_DEPLOYMENT_STAGE=dev
+DSS_S3_CHECKOUT_BUCKET=org-humancellatlas-dss-checkout-dev
+DSS_GS_CHECKOUT_BUCKET=org-humancellatlas-dss-checkout-dev
+STAGING_BUCKET=dss-checkout-tsmith1
+API_DOMAIN_NAME=dss.dev.data.humancellatlas.org
+TARGET_URL=https://${API_DOMAIN_NAME}/v1/
+DSS_SECRETS_STORE=dcp/dss
+GOOGLE_APPLICATION_CREDENTIALS=~/gcp-credentials.json
