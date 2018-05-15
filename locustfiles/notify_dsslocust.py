@@ -2,7 +2,6 @@ import random
 from os import getenv
 import uuid
 from hca.util import SwaggerAPIException
-from gevent._semaphore import Semaphore
 from locustfiles.common.dsslocust import DSSLocust, get_DSSClient
 from locustfiles.common import get_replica
 from locust import task, TaskSet, events
@@ -14,8 +13,6 @@ from locustfiles.common.notifcation_server import NotificationServer
 class NotifyTaskSet(TaskSet):
     subscription_ids = []  # List[Tuple[subscription_id: str, replica: str]]
     max_subscriptions = 10  # limits the max number of subscription per slave
-
-    subscription_count_lock = Semaphore()
     subscription_count=0
 
     def on_start(self):
@@ -26,11 +23,8 @@ class NotifyTaskSet(TaskSet):
     def update_subscription_count(self):
         resp = self.client.get_subscriptions(replica=self.replica)
         subscription_count = len(resp['subscriptions'])
-        if self.subscription_count < self.max_subscriptions:
-            if self.subscription_count_lock.acquire(timeout=10):
-                if subscription_count > self.subscription_count:
-                    self.subscription_count = subscription_count
-                self.subscription_count_lock.release()
+        if subscription_count > self.subscription_count:
+            self.subscription_count = subscription_count
 
     @task(2)
     def put_subscription(self):
