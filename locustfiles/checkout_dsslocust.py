@@ -45,14 +45,16 @@ class CheckoutFixedTaskSet(TaskSet):
         max_wait = 3000
 
         def on_start(self):
+            self.size='large'
+            self.bundle=bundle_large
             self.replica = get_replica()
-            checkout_output = self.client.post_bundles_checkout(uuid=bundle_large['bundle_uuid'], replica=self.replica,
-                                                                email='foo@example.com', name='checkout')
+            checkout_output = self.client.post_bundles_checkout(uuid=self.bundle['bundle_uuid'], replica=self.replica,
+                                                                email='foo@example.com', name=f'checkout {self.size}')
             self.job_id = checkout_output['checkout_job_id']
 
         @task(1)
         def get_status(self):
-            resp_obj = self.client.get_bundles_checkout(checkout_job_id=self.job_id, name='checkout_status')
+            resp_obj = self.client.get_bundles_checkout(checkout_job_id=self.job_id, name=f'checkout_status {self.size}')
             if resp_obj['status'] == 'SUCCESS':
                 self.interrupt()
 
@@ -62,14 +64,17 @@ class CheckoutFixedTaskSet(TaskSet):
         max_wait = 3000
 
         def on_start(self):
+            self.size = 'medium'
+            self.bundle = bundle_medium
             self.replica = get_replica()
-            checkout_output = self.client.post_bundles_checkout(uuid=bundle_medium['bundle_uuid'], replica=self.replica,
-                                                                email='foo@example.com', name='checkout')
+            checkout_output = self.client.post_bundles_checkout(uuid=self.bundle['bundle_uuid'], replica=self.replica,
+                                                                email='foo@example.com', name=f'checkout {self.size}')
             self.job_id = checkout_output['checkout_job_id']
 
         @task(1)
         def get_status(self):
-            resp_obj = self.client.get_bundles_checkout(checkout_job_id=self.job_id, name='checkout_status')
+            resp_obj = self.client.get_bundles_checkout(checkout_job_id=self.job_id,
+                                                        name=f'checkout_status {self.size}')
             if resp_obj['status'] == 'SUCCESS':
                 self.interrupt()
 
