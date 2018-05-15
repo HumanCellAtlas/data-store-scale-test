@@ -5,7 +5,7 @@ from tempfile import TemporaryDirectory
 from locustfiles.common import get_replica
 from locustfiles.common.dsslocust import DSSLocust
 from locustfiles.common.queries import query_medium_files
-
+from locustfiles.common.bundles import bundle_large, bundle_medium
 
 class DownloadTaskSet(TaskSet):
     """
@@ -44,13 +44,11 @@ class DownloadFixedTaskSet(TaskSet):
 
     @task(2)
     def download_medium_sized_bundle(self):
-        self.download(bundle_uuid = "ff9a4a01-cd31-45af-af96-5c62d2db987c",
-                      version = "2017-10-24T192422.909242Z")
+        self.download(**bundle_medium)
 
     @task(1)
     def download_large_sized_bundle(self):
-        self.download(bundle_uuid = "b79884f2-1c34-4c7d-8073-2a30cc6522a7",
-                      version="2018-01-30T021559.657417Z")
+        self.download(**bundle_large)
 
     @task(3)
     def download_file_metadata(self):
