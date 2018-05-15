@@ -28,7 +28,7 @@ class NotifyTaskSet(TaskSet):
             put_response = self.client.put_subscription(es_query=query,
                                                         callback_url=url,
                                                         replica=self.replica,
-                                                        method='PUT')
+                                                        method='POST')
             subscription_id = put_response['uuid']
             self.subscription_ids.append((subscription_id,self.replica))
             self.subscription_count += 1

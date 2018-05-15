@@ -40,6 +40,11 @@ class NotifcationHandler(BaseHTTPRequestHandler):
         self.send_response(200)
         self.end_headers()
 
+    def do_PUT(self):
+        notification_event.fire(response=self.request)
+        self.send_response(200)
+        self.end_headers()
+
     def log_request(self, code='-', size='-'):
         super().log_request(code, size)
 
