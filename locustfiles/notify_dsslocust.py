@@ -1,7 +1,8 @@
+import random
 from os import getenv
 import uuid
 from hca.util import SwaggerAPIException
-
+from gevent._semaphore import Semaphore
 from locustfiles.common.dsslocust import DSSLocust, get_DSSClient
 from locustfiles.common import get_replica
 from locust import task, TaskSet, events
@@ -9,14 +10,27 @@ from locust import task, TaskSet, events
 from locustfiles.common.notifcation_server import NotificationServer
 
 
+
 class NotifyTaskSet(TaskSet):
     subscription_ids = []  # List[Tuple[subscription_id: str, replica: str]]
     max_subscriptions = 10  # limits the max number of subscription per slave
+
+    subscription_count_lock = Semaphore()
+    subscription_count=0
+
     def on_start(self):
         self.replica = get_replica()
         self.notification_keys = []
+        self.update_subscription_count()
+
+    def update_subscription_count(self):
         resp = self.client.get_subscriptions(replica=self.replica)
-        self.subscription_count = len(resp['subscriptions'])
+        subscription_count = len(resp['subscriptions'])
+        if self.subscription_count < self.max_subscriptions:
+            if self.subscription_count_lock.acquire(timeout=10):
+                if subscription_count > self.subscription_count:
+                    self.subscription_count = subscription_count
+                self.subscription_count_lock.release()
 
     @task(2)
     def put_subscription(self):
@@ -29,9 +43,10 @@ class NotifyTaskSet(TaskSet):
                                                         callback_url=url,
                                                         replica=self.replica,
                                                         method='POST')
-            subscription_id = put_response['uuid']
-            self.subscription_ids.append((subscription_id,self.replica))
-            self.subscription_count += 1
+
+            self.subscription_ids.append((put_response['uuid'], self.replica))
+            self.update_subscription_count()
+
 
     @task(1)
     def get_subscriptions(self):
@@ -40,7 +55,7 @@ class NotifyTaskSet(TaskSet):
     @task(1)
     def get_subscription(self):
         if self.subscription_ids:
-            uuid, replica = self.subscription_ids[0]
+            uuid, replica = random.choice(self.subscription_ids)
             self.client.get_subscription(uuid=uuid, replica=replica)
 
 
