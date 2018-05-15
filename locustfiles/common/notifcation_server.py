@@ -20,28 +20,27 @@ def myip():
 notification_event = events.EventHook()
 
 
-def notification_event_handler(response=None):
+def notification_event_handler(path, request_type, request):
     # count the number of times a subscription_uuid is hit
     # count the number of times a bundle is hit for a subscription_uuid
-    resp = response.json()
-    global_stats.get(f"notification {resp['subscription_uuid']}", 'Post').log(0, 0)
+    notification_id = path.split('/')[-1]
+    # req = request.json()
+    global_stats.get(f"notification {notification_id}", request_type).log(0, 0)
 
 
 class NotifcationHandler(BaseHTTPRequestHandler):
     def do_POST(self):
-        # fire event for notification
-        notification_event.fire(response=self.request)
+        notification_event.fire(path=self.path, request_type=self.command, request=self.request)
         self.send_response(200)
         self.end_headers()
 
     def do_GET(self):
-        # fire event for notification
-        notification_event.fire(response=self.request)
+        notification_event.fire(path=self.path, request_type=self.command, request=self.request)
         self.send_response(200)
         self.end_headers()
 
     def do_PUT(self):
-        notification_event.fire(response=self.request)
+        notification_event.fire(path=self.path, request_type=self.command, request=self.request)
         self.send_response(200)
         self.end_headers()
 
@@ -78,7 +77,7 @@ class NotificationServer:
     def on_quitting(cls, **kwargs):
         cls.server.shutdown()
 
-
+notification_event += notification_event_handler
 events.quitting += NotificationServer.on_quitting
 events.locust_start_hatching += NotificationServer.on_locust_start_hatching
 

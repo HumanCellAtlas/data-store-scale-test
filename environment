@@ -6,3 +6,5 @@ API_DOMAIN_NAME=dss.dev.data.humancellatlas.org
 TARGET_URL=https://${API_DOMAIN_NAME}/v1/
 DSS_SECRETS_STORE=dcp/dss
 GOOGLE_APPLICATION_CREDENTIALS=~/gcp-credentials.json
+AWS_DEFAULT_REGION=us-east-1
+TARGET_URL=https://dss.dev.data.humancellatlas.org/v1/
