@@ -1,9 +1,9 @@
 import time
-
+import os
 from locustfiles.common.dsslocust import DSSLocust
 from locust import task, TaskSet, events
 from tempfile import TemporaryDirectory
-from locustfiles.common import STAGING_BUCKET, ASYNC_COPY_THRESHOLD
+from locustfiles.common import ASYNC_COPY_THRESHOLD
 from locustfiles.common.utils import generate_metadata, generate_data
 
 
@@ -19,7 +19,8 @@ class UploadTaskSet(TaskSet):
             generate_data(src_dir, size=ASYNC_COPY_THRESHOLD + 1)
             start = time.time()
             try:
-                response = self.client.upload(src_dir=src_dir, replica=self.replica, staging_bucket=STAGING_BUCKET)
+                response = self.client.upload(src_dir=src_dir, replica=self.replica,
+                                              staging_bucket=os.environ["STAGING_BUCKET"])
             except Exception as ex:
                 events.request_failure.fire(request_type='Post',
                                             name='Upload',
