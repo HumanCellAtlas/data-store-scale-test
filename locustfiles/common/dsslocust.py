@@ -1,3 +1,5 @@
+import re
+
 from locust import Locust  # import first to monkey patch for green threads
 
 import os
@@ -31,6 +33,69 @@ class DSSTestClient(DSSClient):
                 raise Exception(msg.format(prog=self.__module__.replace(".", " ")))
             self._authenticated_session.headers.update({"User-Agent": self.__class__.__name__})
         return self._authenticated_session
+
+    def download(self, bundle_uuid, replica, version="", dest_name="", initial_retries_left=10, min_delay_seconds=0.25,
+                 name=None):
+        """
+        Download a bundle and save it to the local filesystem as a directory.
+        """
+        if not dest_name:
+            dest_name = bundle_uuid
+
+        bundle = self.get_bundle(uuid=bundle_uuid, replica=replica,
+                                 version=version if version else None, name=name)["bundle"]
+
+        if not os.path.isdir(dest_name):
+            os.makedirs(dest_name)
+
+        for file_ in bundle["files"]:
+            file_uuid = file_["uuid"]
+            filename = file_.get("name", file_uuid)
+
+            file_path = os.path.join(dest_name, filename)
+
+            with open(file_path, "wb") as fh:
+                while True:
+                    response = self.get_file._request(
+                        dict(uuid=file_uuid, replica=replica),
+                        stream=True,
+                        headers={
+                            'Range': "bytes={}-".format(fh.tell())
+                        },
+                        name=name
+                    )
+                    try:
+                        if not response.ok:
+                            break
+
+                        consume_bytes = int(fh.tell())
+                        server_start = 0
+                        content_range_header = response.headers.get('Content-Range', None)
+                        if content_range_header is not None:
+                            cre = re.compile("bytes (\d+)-(\d+)")
+                            mo = cre.search(content_range_header)
+                            if mo is not None:
+                                server_start = int(mo.group(1))
+
+                        consume_bytes -= server_start
+                        assert consume_bytes >= 0
+                        if server_start > 0 and consume_bytes == 0:
+                            pass
+                        elif consume_bytes > 0:
+                            while consume_bytes > 0:
+                                bytes_to_read = min(consume_bytes, 1024*1024)
+                                content = response.iter_content(chunk_size=bytes_to_read)
+                                chunk = next(content)
+                                if chunk:
+                                    consume_bytes -= len(chunk)
+
+                        for chunk in response.iter_content(chunk_size=1024*1024):
+                            if chunk:
+                                fh.write(chunk)
+                        break
+                    finally:
+                        response.close()
+        return {}
 
 
 def get_DSSClient(host):
