@@ -52,7 +52,8 @@ class DownloadFixedTaskSet(TaskSet):
 
     @task(3)
     def download_file_metadata(self):
-        bundle = self.client.get_bundle(uuid=self.bundle_uuid, replica=self.replica, version=self.version)["bundle"]
+        bundle = self.client.get_bundle(uuid=bundle_medium['bundle_uuid'], replica=self.replica,
+                                        version=bundle_medium['version'])["bundle"]
         for file_ in bundle["files"]:
             file_uuid = file_["uuid"]
             self.client.head_file(uuid=file_uuid, replica=self.replica)
