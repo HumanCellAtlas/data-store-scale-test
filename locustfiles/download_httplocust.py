@@ -1,9 +1,8 @@
 from random import choice
-from locust import task, TaskSet
+from locust import TaskSet, task, HttpLocust
 from tempfile import TemporaryDirectory
 
 from locustfiles.common import get_replica
-from locustfiles.common.dsslocust import DSSLocust
 from locustfiles.common.queries import query_medium_files
 from locustfiles.common.bundles import bundle_large, bundle_medium, file_medium
 
@@ -42,47 +41,23 @@ class DownloadFixedTaskSet(TaskSet):
     def on_start(self):
         self.replica = get_replica()
 
-    @task(2)
-    def download_medium_sized_bundle(self):
-        self.download(**bundle_medium)
+    def head_file(self, file_uuid):
+        self.request('head', f"file/{file_uuid}", params={'replica': self.replica})
 
-    @task(1)
-    def download_large_sized_bundle(self):
-        self.download(**bundle_large)
+    def get_bundle(self, bundle_uuid, version=None):
+        self.request('get', f"bundle/{bundle_uuid}", params={'replica': get_replica(), 'version': version})
 
-    @task(3)
-    def download_bundle_metadata(self):
-        bundle = self.client.get_bundle(uuid=bundle_medium['bundle_uuid'], replica=self.replica,
-                                        version=bundle_medium['version'])["bundle"]
-        for file_ in bundle["files"]:
-            file_uuid = file_["uuid"]
-            self.client.head_file(uuid=file_uuid, replica=self.replica)
-
-    def download(self, bundle_uuid, version):
-        with TemporaryDirectory() as tmp_dir:
-            self.client.download(bundle_uuid,  self.replica, version=version, dest_name=tmp_dir)
-
-    @task(1)
-    def get_file_medium(self):
-        self.get_file(**file_medium)
 
     def get_file(self, file_uuid):
-        response = self.client.get_file(uuid=file_uuid, replica=self.replica, stream=True)
+        response = self.client.request('get', f"files/{file_uuid}", params={'replica': get_replica()})
         for content in response.iter_content(chunk_size=1024*1024):
             pass
 
-    @task(1)
-    def get_bundle_with_version(self):
-        self.get_bundle(**bundle_medium)
+    def get_file_medium(self):
+        self.get_file(**file_medium)
 
-    @task(1)
-    def get_bundle_latest_version(self):
-        self.get_bundle(uuid=bundle_medium['bundle_uuid'])
 
-    def get_bundle(self, bundle_uuid, version=None):
-        self.client.get_bundle(uuid=bundle_uuid, replica=self.replica, version=version)
-
-class DownloadUser(DSSLocust):
+class DownloadUser(HttpLocust):
     min_wait = 500
     max_wait = 3000
     task_set = DownloadTaskSet
