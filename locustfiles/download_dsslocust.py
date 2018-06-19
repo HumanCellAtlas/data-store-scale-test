@@ -5,7 +5,8 @@ from tempfile import TemporaryDirectory
 from locustfiles.common import get_replica
 from locustfiles.common.dsslocust import DSSLocust
 from locustfiles.common.queries import query_medium_files
-from locustfiles.common.bundles import bundle_large, bundle_medium, file_medium
+from locustfiles.common.bundles import bundle_large, bundle_medium, file_medium, file_large
+
 
 class DownloadTaskSet(TaskSet):
     """
@@ -42,7 +43,11 @@ class DownloadFixedTaskSet(TaskSet):
     def on_start(self):
         self.replica = get_replica()
 
-    @task(2)
+    def download(self, bundle_uuid, version):
+        with TemporaryDirectory() as tmp_dir:
+            self.client.download(bundle_uuid,  self.replica, version=version, dest_name=tmp_dir)
+
+    @task(1)
     def download_medium_sized_bundle(self):
         self.download(**bundle_medium)
 
@@ -50,7 +55,7 @@ class DownloadFixedTaskSet(TaskSet):
     def download_large_sized_bundle(self):
         self.download(**bundle_large)
 
-    @task(3)
+    @task(2)
     def download_bundle_metadata(self):
         bundle = self.client.get_bundle(uuid=bundle_medium['bundle_uuid'], replica=self.replica,
                                         version=bundle_medium['version'])["bundle"]
@@ -58,18 +63,17 @@ class DownloadFixedTaskSet(TaskSet):
             file_uuid = file_["uuid"]
             self.client.head_file(uuid=file_uuid, replica=self.replica)
 
-    def download(self, bundle_uuid, version):
-        with TemporaryDirectory() as tmp_dir:
-            self.client.download(bundle_uuid,  self.replica, version=version, dest_name=tmp_dir)
-
     @task(1)
     def get_file_medium(self):
         self.get_file(**file_medium)
 
+    @task(1)
+    def get_file_large(self):
+        self.get_file(**file_large)
+
+
     def get_file(self, file_uuid):
         response = self.client.get_file(uuid=file_uuid, replica=self.replica, stream=True)
-        for content in response.iter_content(chunk_size=1024*1024):
-            pass
 
     @task(1)
     def get_bundle_with_version(self):
@@ -77,7 +81,7 @@ class DownloadFixedTaskSet(TaskSet):
 
     @task(1)
     def get_bundle_latest_version(self):
-        self.get_bundle(uuid=bundle_medium['bundle_uuid'])
+        self.get_bundle(bundle_medium['bundle_uuid'])
 
     def get_bundle(self, bundle_uuid, version=None):
         self.client.get_bundle(uuid=bundle_uuid, replica=self.replica, version=version)
