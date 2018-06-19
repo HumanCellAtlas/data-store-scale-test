@@ -9,8 +9,8 @@ class CheckoutTaskSet(TaskSet):
 
     @task(3)
     class CheckoutWait(TaskSet):
-        min_wait = 3000
-        max_wait = 3000
+        min_wait = 500
+        max_wait = 500
 
         def on_start(self):
             self.replica = get_replica()

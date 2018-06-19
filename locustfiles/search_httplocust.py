@@ -28,8 +28,8 @@ class SearchTaskSet(SearchActions):
 
     @task(1)
     class Paging(SearchActions):
-        min_wait = 500
-        max_wait = 1000
+        min_wait = 100
+        max_wait = 100
 
         def on_start(self):
             self.page = self._search()
@@ -40,8 +40,8 @@ class SearchTaskSet(SearchActions):
 
     @task(2)
     class PagingIncomplete(SearchActions):
-        min_wait = 500
-        max_wait = 1000
+        min_wait = 100
+        max_wait = 100
         def on_start(self):
             self.page = self._search()
 
