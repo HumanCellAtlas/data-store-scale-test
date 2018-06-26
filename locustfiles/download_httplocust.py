@@ -15,15 +15,31 @@ class DownloadFixedTaskSet(TaskSet):
         self.replica = get_replica()
 
     def head_file(self, file_uuid):
-        self.client.head('head', f"file/{file_uuid}", params={'replica': self.replica})
+        self.client.head(f"files/{file_uuid}", params={'replica': self.replica})
 
     def get_bundle(self, bundle_uuid, version=None):
-        self.client.get(f"bundle/{bundle_uuid}", params={'replica': get_replica(), 'version': version})
+        self.client.get(f"bundles/{bundle_uuid}", params={'replica': get_replica(), 'version': version})
 
     def get_file(self, file_uuid):
         resp = self.client.get( f"files/{file_uuid}", params={'replica': get_replica()}, stream=False,
                                 allow_redirects=False)
         return resp
+
+    @task(1)
+    def get_bundle_latest_version(self):
+        self.get_bundle(bundle_medium['bundle_uuid'])
+
+    @task(1)
+    def get_bundle_medium(self):
+        self.get_bundle(**bundle_medium)
+
+    @task(1)
+    def get_bundle_large(self):
+        self.get_bundle(**bundle_large)
+
+    @task(1)
+    def head_file_medium(self):
+        self.head_file(**file_medium)
 
     @task(1)
     def get_file_medium(self):
