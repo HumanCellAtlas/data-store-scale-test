@@ -1,22 +1,37 @@
 import re
+import time
+import uuid
+from datetime import datetime
+from functools import lru_cache
 
+import requests
+from hca import logger
 from locust import Locust  # import first to monkey patch for green threads
 
 import os
 from hca.config import get_config
-from hca.dss import DSSClient
+from hca.dss import DSSClient, upload_to_cloud
 from locust.clients import HttpSession
 from requests_oauthlib import OAuth2Session
+
+from hca.util import SwaggerAPIException
+
 
 class OAuth2SessionMod(OAuth2Session, HttpSession):
     pass
 
 
+@lru_cache()
+def upload_to_cloud_lru(file_handles, staging_bucket, replica, from_cloud=True):
+    return upload_to_cloud([file_handles], staging_bucket, replica, from_cloud)
+
+
 class DSSTestClient(DSSClient):
     def get_session(self):
         if self._session is None:
-            self._session = HttpSession(self.host, **self._session_kwargs)
+            self._session = HttpSession(self.config[self.__class__.__name__].host, **self._session_kwargs)
             self._session.headers.update({"User-Agent": self.__class__.__name__})
+            self._set_retry_policy(self._session)
         return self._session
 
     def get_authenticated_session(self):
@@ -97,10 +112,82 @@ class DSSTestClient(DSSClient):
                         response.close()
         return {}
 
+    def upload_from_cloud(self, src_dir, staging_bucket, replica='aws', timeout_seconds=1200):
+        bundle_uuid = str(uuid.uuid4())
+        version = datetime.utcnow().strftime("%Y-%m-%dT%H%M%S.%fZ")
+        creator_uid = 9889
+
+        file_uuids, uploaded_keys = upload_to_cloud_lru(src_dir, staging_bucket=staging_bucket, replica=replica,
+                                                        from_cloud=True)
+
+        filenames = list(map(os.path.basename, uploaded_keys))
+        filename_key_list = list(zip(filenames, file_uuids, uploaded_keys))
+
+        files_uploaded = []
+        for filename, file_uuid, key in filename_key_list:
+            logger.info("File {}: registering...".format(filename))
+
+            # Generating file data
+            source_url = "s3://{}/{}".format(staging_bucket, key)
+            logger.info("File {}: registering from {} -> uuid {}".format(filename, source_url, file_uuid))
+
+            response = self.put_file._request(dict(
+                uuid=file_uuid,
+                bundle_uuid=bundle_uuid,
+                version=version,
+                creator_uid=creator_uid,
+                source_url=source_url
+            ))
+            files_uploaded.append(dict(name=filename, version=version, uuid=file_uuid, creator_uid=creator_uid))
+
+            if response.status_code in (requests.codes.ok, requests.codes.created):
+                logger.info("File {}: Sync copy -> {}".format(filename, version))
+            else:
+                assert response.status_code == requests.codes.accepted
+                logger.info("File {}: Async copy -> {}".format(filename, version))
+
+                timeout = time.time() + timeout_seconds
+                wait = 1.0
+                while time.time() < timeout:
+                    try:
+                        self.head_file(uuid=file_uuid, replica="aws", version=version)
+                        break
+                    except SwaggerAPIException as e:
+                        if e.code != requests.codes.not_found:
+                            msg = "File {}: Unexpected server response during registration"
+                            raise RuntimeError(msg.format(filename))
+                        time.sleep(wait)
+                        wait = min(60.0, wait * self.UPLOAD_BACKOFF_FACTOR)
+                else:
+                    raise RuntimeError("File {}: registration FAILED".format(filename))
+                logger.debug("Successfully uploaded file")
+
+        file_args = [{'indexed': file_["name"].endswith(".json"),
+                      'name': file_['name'],
+                      'version': file_['version'],
+                      'uuid': file_['uuid']} for file_ in files_uploaded]
+
+        logger.info("Bundle {}: Registering...".format(bundle_uuid))
+
+        response = self.put_bundle(uuid=bundle_uuid,
+                                   version=version,
+                                   replica=replica,
+                                   creator_uid=creator_uid,
+                                   files=file_args)
+        logger.info("Bundle {}: Registered successfully".format(bundle_uuid))
+
+        return {
+            "bundle_uuid": bundle_uuid,
+            "creator_uid": creator_uid,
+            "replica": replica,
+            "version": response["version"],
+            "files": files_uploaded
+        }
+
 
 def get_DSSClient(host):
     config = get_config()
-    config.update({"DSSTestClient": {"swagger_url": host + "swagger.json"}})
+    config.update({"DSSTestClient": {"swagger_url": host + "swagger.json", "host":host}})
     return DSSTestClient(config=config)
 
 

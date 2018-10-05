@@ -88,5 +88,18 @@ def generate_metadata(dir):
 
 def generate_data(dir, size=ASYNC_COPY_THRESHOLD):
     with NamedTemporaryFile(dir=dir, delete=False, suffix=".bin") as fh:
-        fh.write(os.urandom(size))
+        fh.write(get_data(size))
         fh.flush()
+
+
+data = b''
+
+
+def get_data(size):
+    global data
+    if len(data) < size:
+        data += os.urandom(size - len(data))
+        return data
+    else:
+        return data[:size]
+
