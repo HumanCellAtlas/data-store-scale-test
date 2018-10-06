@@ -36,9 +36,6 @@ class test_users(unittest.TestCase):
     def test_download_fixed(self):
         self.run_user(locustfiles.DSSLocust, locustfiles.DownloadFixedTaskSet, stop_timeout_=30)
 
-    def test_download_fixed2(self):
-        self.run_user(HttpLocust, download_httplocust.DownloadFixedTaskSet, stop_timeout_=30)
-
     def test_search_user(self):
         self.run_user(HttpLocust, locustfiles.SearchTaskSet)
 
