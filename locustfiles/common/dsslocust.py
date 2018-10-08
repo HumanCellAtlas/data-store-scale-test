@@ -19,15 +19,15 @@ from hca.util import SwaggerAPIException
 
 class UUIDFilter(logging.Filter):
     def filter(self, record):
-        if "UUID" in record.msg:
+        if "UUID" in record.msg and 'Upload' in record.msg:
             return True
         else:
             return False
 
-
-fh = logging.FileHandler('uuid.log')
+fh = logging.FileHandler('upload_uuids.log')
 fh.setLevel(logging.INFO)
 fh.addFilter(UUIDFilter())
+fh.formatter = logging.Formatter(fmt="{asctime}: {message}", datefmt="%Y-%m-%d %H:%M:%S", style='{')
 logger.addHandler(fh)
 
 class OAuth2SessionMod(OAuth2Session, HttpSession):
@@ -138,7 +138,8 @@ class DSSTestClient(DSSClient):
 
         files_uploaded = []
         for filename, file_uuid, key in filename_key_list:
-            logger.info("Bundle UUID:{}, File UUID:{}, Upload:START".format(bundle_uuid, file_uuid))
+            logger.info("Bundle UUID:{}, File UUID:{}, Version:{}, Upload:START".format(
+                bundle_uuid, file_uuid, version))
 
             # Generating file data
             source_url = "s3://{}/{}".format(staging_bucket, key)
@@ -155,7 +156,8 @@ class DSSTestClient(DSSClient):
             files_uploaded.append(dict(name=filename, version=version, uuid=file_uuid, creator_uid=creator_uid))
 
             if response.status_code in (requests.codes.ok, requests.codes.created):
-                logger.info("File {}.: Sync copy -> {}".format(filename, version))
+                logger.info("Bundle UUID:{}, File UUID:{}, Version:{}, Upload:PASSED".format(
+                    bundle_uuid, file_uuid, version))
             else:
                 assert response.status_code == requests.codes.accepted
                 logger.info("File {}: Async copy -> {}".format(filename, version))
@@ -168,17 +170,18 @@ class DSSTestClient(DSSClient):
                         break
                     except SwaggerAPIException as e:
                         if e.code != requests.codes.not_found:
-                            logger.Error("Bundle UUID:{}, File UUID:{}, Upload:FAILED, "
-                                         "Response:{}".format(bundle_uuid, file_uuid, e.code))
+                            logger.Error("Bundle UUID:{}, File UUID:{}, Version:{}, Upload:FAILED, "
+                                         "Response:{}".format(bundle_uuid, file_uuid, version, e.code))
                             msg = "File {}: Unexpected server response during registration"
                             raise RuntimeError(msg.format(filename))
                         time.sleep(wait)
                         wait = min(60.0, wait * self.UPLOAD_BACKOFF_FACTOR)
                 else:
-                    logger.Error("Bundle UUID:{}, File UUID:{}, Upload:FAILED, Response:Timeout".format(bundle_uuid,
-                                                                                                        file_uuid))
+                    logger.Error("Bundle UUID:{}, File UUID:{}, Version:{}, Upload:FAILED, Response:Timeout".format(
+                        bundle_uuid, file_uuid, version))
                     raise RuntimeError("File {}: registration FAILED".format(filename))
-                logger.info("Bundle UUID:{}, File UUID:{}, Upload:PASSED".format(bundle_uuid, file_uuid))
+                logger.info("Bundle UUID:{}, File UUID:{}, Version:{}, Upload:PASSED".format(
+                    bundle_uuid, file_uuid, version))
 
         file_args = [{'indexed': file_["name"].endswith(".json"),
                       'name': file_['name'],
@@ -194,9 +197,10 @@ class DSSTestClient(DSSClient):
                                    files=file_args,
                                    name='put bundle')
         if response.status_code in (requests.codes.ok, requests.codes.created):
-            logger.info("Bundle UUID:{}, Register:PASS".format(bundle_uuid))
+            logger.info("Bundle UUID:{}, Version:{}, Register:PASS".format(bundle_uuid, version))
         else:
-            logger.info("Bundle UUID:{}, Register:FAILED, Response:{}".format(bundle_uuid, response.status_code))
+            logger.info("Bundle UUID:{}, Version:{}, Register:FAILED, Response:{}".format(
+                bundle_uuid, version, response.status_code))
 
         return {
             "bundle_uuid": bundle_uuid,
