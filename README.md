@@ -37,6 +37,7 @@ To run using docker you:
 
 #### Environment Variables
 - `TARGET_URL` - specifies the endpoint for unittests to target. Example: http://localhost:1234
+- `GOOGLE_APPLICATION_CREDENTIALS` - A file path to google application credentials Used to access endpoints that require Auth.
 
 #### Modifying the Tests
 Preconfigured test are located in `./scale_tests`. Additional scale test should be added to this directory.
