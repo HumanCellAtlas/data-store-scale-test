@@ -32,13 +32,14 @@ To run using docker you:
 - deploy lambdas using make deploy
 - setup environment variables
 
+#### Running from CLI
+`$ locust -f ./scale_tests/upload_cloud.py --host=local:1234 --no-web --client=100 --hatch-rate=50 --run-time=10s --csv=./scale_tests/upload`
+
 #### Environment Variables
-- `TARGET_URL` - specifies the endpoint for tests to target. Example: http://localhost:1234
+- `TARGET_URL` - specifies the endpoint for unittests to target. Example: http://localhost:1234
 
 #### Modifying the Tests
-You can adjust the way the load test runs by modifying `DSS-scalability/locustfile.py`. 
-
-Additional test should be added to `Dss-scalability/locustfiles.py` and imported into `DSS-scalability/locustfile.py`.
+Preconfigured test are located in `./scale_tests`. Additional scale test should be added to this directory.
 
 #### Adding new requirements
 If new python module is required, added the requirement to `DSS-scalability/requirements.txt`. 
