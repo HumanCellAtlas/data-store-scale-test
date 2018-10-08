@@ -7,7 +7,7 @@ from locustfiles.common import ASYNC_COPY_THRESHOLD
 from locustfiles.common.utils import generate_metadata, generate_data
 
 
-class UploadTaskSet(TaskSet):
+class UploadLocalTaskSet(TaskSet):
     def on_start(self):
         self.replica = 'aws'
         self.bundles = []
@@ -33,6 +33,10 @@ class UploadTaskSet(TaskSet):
                                             response_length=len(response))
                 self.bundles.append(response['bundle_uuid'])
 
+    # TODO delete bundles when done
+
+
+class UploadCloudTaskSet(TaskSet):
     @task(1)
     def upload_from_cloud(self):
         src = "s3://org-humancellatlas-upload-dev/01ed0b2c-30c8-4a79-a564-e5f7c1e131f9"
@@ -46,5 +50,5 @@ class UploadTaskSet(TaskSet):
 class UploadUser(DSSLocust):
     min_wait = 500
     max_wait = 500
-    task_set = UploadTaskSet
+    task_set = [UploadLocalTaskSet, UploadCloudTaskSet]
     weight = 1
