@@ -32,6 +32,9 @@ To run using docker you:
 - deploy lambdas using make deploy
 - setup environment variables
 
+#### Environment Variables
+- `TARGET_URL` - specifies the endpoint for tests to target. Example: http://localhost:1234
+
 #### Modifying the Tests
 You can adjust the way the load test runs by modifying `DSS-scalability/locustfile.py`. 
 
