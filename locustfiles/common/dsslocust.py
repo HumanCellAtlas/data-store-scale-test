@@ -3,19 +3,32 @@ import time
 import uuid
 from datetime import datetime
 from functools import lru_cache
-
+import logging
 import requests
-from hca import logger
 from locust import Locust  # import first to monkey patch for green threads
 
 import os
 from hca.config import get_config
 from hca.dss import DSSClient, upload_to_cloud
 from locust.clients import HttpSession
+from hca import logger
 from requests_oauthlib import OAuth2Session
 
 from hca.util import SwaggerAPIException
 
+
+class UUIDFilter(logging.Filter):
+    def filter(self, record):
+        if "UUID" in record.msg:
+            return True
+        else:
+            return False
+
+
+fh = logging.FileHandler('uuid.log')
+fh.setLevel(logging.INFO)
+fh.addFilter(UUIDFilter())
+logger.addHandler(fh)
 
 class OAuth2SessionMod(OAuth2Session, HttpSession):
     pass
@@ -125,7 +138,7 @@ class DSSTestClient(DSSClient):
 
         files_uploaded = []
         for filename, file_uuid, key in filename_key_list:
-            logger.info("File {}: registering...".format(filename))
+            logger.info("Bundle UUID:{}, File UUID:{}, Upload:START".format(bundle_uuid, file_uuid))
 
             # Generating file data
             source_url = "s3://{}/{}".format(staging_bucket, key)
@@ -136,12 +149,13 @@ class DSSTestClient(DSSClient):
                 bundle_uuid=bundle_uuid,
                 version=version,
                 creator_uid=creator_uid,
-                source_url=source_url
+                source_url=source_url,
+                name=f"put file: {source_url}",
             ))
             files_uploaded.append(dict(name=filename, version=version, uuid=file_uuid, creator_uid=creator_uid))
 
             if response.status_code in (requests.codes.ok, requests.codes.created):
-                logger.info("File {}: Sync copy -> {}".format(filename, version))
+                logger.info("File {}.: Sync copy -> {}".format(filename, version))
             else:
                 assert response.status_code == requests.codes.accepted
                 logger.info("File {}: Async copy -> {}".format(filename, version))
@@ -150,31 +164,39 @@ class DSSTestClient(DSSClient):
                 wait = 1.0
                 while time.time() < timeout:
                     try:
-                        self.head_file(uuid=file_uuid, replica="aws", version=version)
+                        self.head_file(uuid=file_uuid, replica="aws", version=version, name=f"head file: {file_uuid}")
                         break
                     except SwaggerAPIException as e:
                         if e.code != requests.codes.not_found:
+                            logger.Error("Bundle UUID:{}, File UUID:{}, Upload:FAILED, "
+                                         "Response:{}".format(bundle_uuid, file_uuid, e.code))
                             msg = "File {}: Unexpected server response during registration"
                             raise RuntimeError(msg.format(filename))
                         time.sleep(wait)
                         wait = min(60.0, wait * self.UPLOAD_BACKOFF_FACTOR)
                 else:
+                    logger.Error("Bundle UUID:{}, File UUID:{}, Upload:FAILED, Response:Timeout".format(bundle_uuid,
+                                                                                                        file_uuid))
                     raise RuntimeError("File {}: registration FAILED".format(filename))
-                logger.debug("Successfully uploaded file")
+                logger.info("Bundle UUID:{}, File UUID:{}, Upload:PASSED".format(bundle_uuid, file_uuid))
 
         file_args = [{'indexed': file_["name"].endswith(".json"),
                       'name': file_['name'],
                       'version': file_['version'],
                       'uuid': file_['uuid']} for file_ in files_uploaded]
 
-        logger.info("Bundle {}: Registering...".format(bundle_uuid))
+        logger.info("Bundle UUID:{}, Register:START".format(bundle_uuid))
 
         response = self.put_bundle(uuid=bundle_uuid,
                                    version=version,
                                    replica=replica,
                                    creator_uid=creator_uid,
-                                   files=file_args)
-        logger.info("Bundle {}: Registered successfully".format(bundle_uuid))
+                                   files=file_args,
+                                   name='put bundle')
+        if response.status_code in (requests.codes.ok, requests.codes.created):
+            logger.info("Bundle UUID:{}, Register:PASS".format(bundle_uuid))
+        else:
+            logger.info("Bundle UUID:{}, Register:FAILED, Response:{}".format(bundle_uuid, response.status_code))
 
         return {
             "bundle_uuid": bundle_uuid,
