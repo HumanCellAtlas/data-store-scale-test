@@ -214,9 +214,6 @@ class DSSTestClient(DSSClient):
 class HCALambdaConfig(HCAConfig):
     default_config_file = os.path.join(os.path.dirname(__file__), "default_config.json")
 
-    def __init__(self, *args, **kwargs):
-        super(HCAConfig, self).__init__(name="hca", *args, **kwargs)
-
     @property
     def user_config_dir(self):
         return os.path.join('/tmp/', self._name)
