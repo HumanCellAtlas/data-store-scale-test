@@ -8,7 +8,7 @@ import requests
 from locust import Locust  # import first to monkey patch for green threads
 
 import os
-from hca.config import get_config
+from hca.config import HCAConfig, _config
 from hca.dss import DSSClient, upload_to_cloud
 from locust.clients import HttpSession
 from hca import logger
@@ -24,11 +24,11 @@ class UUIDFilter(logging.Filter):
         else:
             return False
 
-fh = logging.FileHandler('upload_uuids.log')
-fh.setLevel(logging.INFO)
-fh.addFilter(UUIDFilter())
-fh.formatter = logging.Formatter(fmt="{asctime}: {message}", datefmt="%Y-%m-%d %H:%M:%S", style='{')
-logger.addHandler(fh)
+# fh = logging.FileHandler('upload_uuids.log')
+# fh.setLevel(logging.INFO)
+# fh.addFilter(UUIDFilter())
+# fh.formatter = logging.Formatter(fmt="{asctime}: {message}", datefmt="%Y-%m-%d %H:%M:%S", style='{')
+# logger.addHandler(fh)
 
 class OAuth2SessionMod(OAuth2Session, HttpSession):
     pass
@@ -196,8 +196,8 @@ class DSSTestClient(DSSClient):
                                    creator_uid=creator_uid,
                                    files=file_args,
                                    name='put bundle')
-        if response.status_code in (requests.codes.ok, requests.codes.created):
-            logger.info("Bundle UUID:{}, Version:{}, Register:PASS".format(bundle_uuid, version))
+        if response.get("version"):
+            logger.info("Bundle UUID:{}, Version:{}, Register:PASS".format(bundle_uuid, response["version"]))
         else:
             logger.info("Bundle UUID:{}, Version:{}, Register:FAILED, Response:{}".format(
                 bundle_uuid, version, response.status_code))
@@ -209,6 +209,24 @@ class DSSTestClient(DSSClient):
             "version": response["version"],
             "files": files_uploaded
         }
+
+
+class HCALambdaConfig(HCAConfig):
+    default_config_file = os.path.join(os.path.dirname(__file__), "default_config.json")
+
+    def __init__(self, *args, **kwargs):
+        super(HCAConfig, self).__init__(name="hca", *args, **kwargs)
+
+    @property
+    def user_config_dir(self):
+        return os.path.join('/tmp/', self._name)
+
+
+def get_config():
+    global _config
+    if _config is None:
+        _config = HCALambdaConfig()
+    return _config
 
 
 def get_DSSClient(host):
