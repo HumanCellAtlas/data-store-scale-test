@@ -49,3 +49,10 @@ If  using Elasticbeanstock add the new requirements to `DSS-scalability/eb-locus
 under `locust36`.
 
 
+##### Update chalice requirements
+downloads the packages for aws lambda env
+docker run -it --volume=$PWD:/pp python:3.6 bash -c "pip download invokust locustio==0.8.1 gevent==1.2.2 git+git://github.com/HumanCellAtlas/dcp-cli@tsmith-load-testing#egg=hca --dest=/pp" 
+
+How to build _wheels_ for the aws lambda env
+1. Run `docker run -it --volume=$PWD:/chalice python:3.6 bash -c “pip wheel —wheel-dir=chalice/py_pkgs -r /requirements.txt""`
+1. follow instructions after "The cryptography wheel file has been built" -> [chalice requirements example](https://chalice.readthedocs.io/en/latest/topics/packaging.html?highlight=requirements)
