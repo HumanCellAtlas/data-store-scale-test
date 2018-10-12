@@ -6,7 +6,7 @@
     "MemorySize": 1536,
     "Environment": {
         "Variables": {
-            "XDG_CONFIG_HOME": "/temp/.config"
+            "XDG_CONFIG_HOME": "/tmp/.config"
         }
     },
     "Runtime": "python3.6"
