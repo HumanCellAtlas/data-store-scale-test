@@ -1,18 +1,13 @@
-from gevent import monkey
-
-monkey.patch_all(thread=False) # must be called as early as possible
-
+from locust import Locust  # import first to monkey patch for green threads
 import os
 
-host = 'https://tsmith1.ucsc-cgp-dev.org/v1/'
-# host = 'https://dss.dev.data.humancellatlas.org/v1/'
-os.environ['TARGET_URL'] = 'https://tsmith1.ucsc-cgp-dev.org/v1/'
+host = 'https://dss.dev.data.humancellatlas.org/v1/'
+os.environ['TARGET_URL'] = 'https://dss.dev.data.humancellatlas.org/v1/'
 
 import locustfiles
+from locustfiles import download_httplocust
 from locust import HttpLocust, events
 import unittest
-# import invokust
-# from collections import Iterable
 
 
 class test_users(unittest.TestCase):
