@@ -16,4 +16,4 @@ STAGING_BUCKET=dss-checkout-tsmith1
 API_DOMAIN_NAME=tsmith1.ucsc-cgp-dev.org
 TARGET_URL=https://${API_DOMAIN_NAME}/v1/
 GOOGLE_APPLICATION_CREDENTIALS=~/workspace/credentials/ucsc/gcp-credentials.json
-AWS_DEFAULT_REGION=us-east-1
+XDG_CONFIG_HOME=/temp/.config
