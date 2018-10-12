@@ -9,7 +9,7 @@ from locustfiles import UploadCloudTaskSet
 
 
 class UploadUser(DSSLocust):
-    min_wait = 500
-    max_wait = 500
+    min_wait = 100
+    max_wait = 100
     task_set = UploadCloudTaskSet
     weight = 1
