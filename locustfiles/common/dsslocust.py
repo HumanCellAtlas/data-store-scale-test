@@ -8,7 +8,7 @@ import requests
 from locust import Locust  # import first to monkey patch for green threads
 
 import os
-from hca.config import HCAConfig, _config
+from hca.config import get_config
 from hca.dss import DSSClient, upload_to_cloud
 from locust.clients import HttpSession
 from hca import logger
@@ -209,21 +209,6 @@ class DSSTestClient(DSSClient):
             "version": response["version"],
             "files": files_uploaded
         }
-
-
-class HCALambdaConfig(HCAConfig):
-    default_config_file = os.path.join(os.path.dirname(__file__), "default_config.json")
-
-    @property
-    def user_config_dir(self):
-        return os.path.join('/tmp/', self._name)
-
-
-def get_config():
-    global _config
-    if _config is None:
-        _config = HCALambdaConfig()
-    return _config
 
 
 def get_DSSClient(host):
