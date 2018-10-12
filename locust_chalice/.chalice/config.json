@@ -1,0 +1,18 @@
+{
+  "version": "2.0",
+  "app_name": "dss_locust",
+  "stages": {
+    "dev": {
+      "api_gateway_stage": "api"
+    }
+  },
+  "manage_iam_role":false,
+  "iam_role_arn":"arn:aws:iam::861229788715:role/upload_scale_test_tsmith",
+  "environment_variables": {
+    "XDG_CONFIG_HOME": "/temp/.config"
+
+  },
+  "lambda_timeout": 300,
+  "lambda_memory_size": 1536
+
+}
