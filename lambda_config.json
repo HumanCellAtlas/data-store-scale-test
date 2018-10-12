@@ -1,0 +1,13 @@
+{
+    "FunctionName": "lambda_locust",
+    "Role": "arn:aws:iam::861229788715:role/upload_scale_test_tsmith",
+    "Description": "dss_locust_scale_test",
+    "Timeout": 300,
+    "MemorySize": 1536,
+    "Environment": {
+        "Variables": {
+            "XDG_CONFIG_HOME": "/temp/.config"
+        }
+    },
+    "Runtime": "python3.6"
+}
