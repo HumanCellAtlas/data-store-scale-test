@@ -1,16 +1,21 @@
-import invokust
+import os
+import sys
 
-settings = invokust.create_settings(
-    locustfile='../locustfile.py',
-    host='https://dss.dev.data.humancellatlas.org/v1/',
-    num_requests=10,
+from invokust import create_settings, LocustLoadTest
+
+pkg_root = os.path.abspath(os.path.join(os.path.dirname(__file__), '..'))  # noqa
+sys.path.insert(0, pkg_root)  # noqa
+
+settings = create_settings(
+    locustfile='locustfile.py',
+    host=os.environ['TARGET_URL'],
     num_clients=1,
-    hatch_rate=1
+    hatch_rate=1,
+    run_time='30s'
     )
 
 settings.no_reset_stats = False
-settings.run_time='30s'
-loadtest = invokust.LocustLoadTest(settings)
-loadtest.run(timeout=260)
+loadtest = LocustLoadTest(settings)
+loadtest.run()
 stats = loadtest.stats()
 print(stats)
