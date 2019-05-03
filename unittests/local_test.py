@@ -1,17 +1,19 @@
 from locust import Locust  # import first to monkey patch for green threads
 import os
+import sys
 
 host = 'https://dss.dev.data.humancellatlas.org/v1/'
 os.environ['TARGET_URL'] = 'https://dss.dev.data.humancellatlas.org/v1/'
 
+pkg_root = os.path.abspath(os.path.join(os.path.dirname(__file__), '..'))  # noqa
+sys.path.insert(0, pkg_root)  # noqa
+
 import locustfiles
-from locustfiles import download_httplocust
 from locust import HttpLocust, events
 import unittest
 
 
 class test_users(unittest.TestCase):
-
     @classmethod
     def setUpClass(cls):
         cls.host = host

@@ -1,5 +1,5 @@
+invokust
 locustio == 0.8.1
 gevent == 1.2.2
-invokust
 git+git://github.com/HumanCellAtlas/dcp-cli@tsmith-load-testing#egg=hca
 git+git://github.com/HumanCellAtlas/dcp-pyjsongen@master#egg=pyjsongen

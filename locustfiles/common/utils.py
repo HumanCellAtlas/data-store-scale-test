@@ -55,7 +55,7 @@ class UrlBuilder:
 
         return self
 
-    def __str__(self) -> str:
+    def __str__(self):
         result = self.splitted._replace(query=urlencode(self.query, doseq=True))
 
         return urlunsplit(result)
@@ -68,19 +68,10 @@ schema_urls = [
 ]
 
 
-json_faker = None
-
-
-def generate_sample() -> str:
-    global json_faker
-    if json_faker is None:
-        json_faker = HCAJsonGenerator(schema_urls)
-    data = json_faker.generate()
-    return json_faker.last_name, data
-
-
 def generate_metadata(dir):
-    name, data = generate_sample()
+    json_faker = HCAJsonGenerator(schema_urls)
+    data = json_faker.generate()
+    name, data = json_faker.last_name, data
     with NamedTemporaryFile(dir=dir, mode='w', suffix=".json", prefix=f"{name}", delete=False) as jfh:
         jfh.write(data)
         jfh.flush()
@@ -88,17 +79,5 @@ def generate_metadata(dir):
 
 def generate_data(dir, size=ASYNC_COPY_THRESHOLD):
     with NamedTemporaryFile(dir=dir, delete=False, suffix=".bin") as fh:
-        fh.write(get_data(size))
+        fh.write(os.urandom(size))
         fh.flush()
-
-
-data = b''
-
-
-def get_data(size):
-    global data
-    if len(data) < size:
-        data += os.urandom(size - len(data))
-        return data
-    else:
-        return data[:size]

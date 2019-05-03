@@ -5,12 +5,14 @@
 # Python files
 *.pyc
 __pycache__/
+/.pytest_cache
 .mypy_cache/
 .tox/
 *.egg-info/
 /build/
 /dist/
 /.eggs/
+python-packages
 
 # dcp pyjsongen
 /dcp-pyjsongen
@@ -48,6 +50,10 @@ npm-debug.log
 
 # Temporary folder
 /tmp
+
+# virtualenv
+/venv
+/v3nv
 
 # Local environment configuration
 /environment.local
