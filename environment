@@ -1,19 +1,29 @@
-#AWS_PROFILE=hca
-#DSS_DEPLOYMENT_STAGE=dev
-#DSS_S3_CHECKOUT_BUCKET=org-humancellatlas-dss-checkout-dev
-#DSS_GS_CHECKOUT_BUCKET=org-humancellatlas-dss-checkout-dev
-#STAGING_BUCKET=dss-scaletest
-#API_DOMAIN_NAME=dss.dev.data.humancellatlas.org
-#TARGET_URL=https://${API_DOMAIN_NAME}/v1/
-#DSS_SECRETS_STORE=dcp/dss
-#GOOGLE_APPLICATION_CREDENTIALS=~/gcp-credentials.json
-#AWS_DEFAULT_REGION=us-east-1
-#TARGET_URL=https://dss.dev.data.humancellatlas.org/v1/
+# Resolve the location of this file and set DSS_SCALE_HOME to the root
+SOURCE="${BASH_SOURCE[0]}"
+while [ -h "$SOURCE" ] ; do SOURCE="$(readlink "$SOURCE")"; done
+export DSS_SCALE_HOME="$(cd -P "$(dirname "$SOURCE")" && pwd)"
 
 set -a
-AWS_PROFILE=ucsc
-STAGING_BUCKET=dss-checkout-tsmith1
-API_DOMAIN_NAME=tsmith1.ucsc-cgp-dev.org
+DSS_DEPLOYMENT_STAGE=dev
+DSS_BLOB_TTL_DAYS=7
+DSS_BLOB_PUBLIC_TTL_DAYS=4
+DSS_INFRA_TAG_PROJECT=dcp
+DSS_INFRA_TAG_SERVICE=dss
+DSS_INFRA_TAG_OWNER=dss-team@data.humancellatlas.org
+DSS_S3_CHECKOUT_BUCKET=org-humancellatlas-dss-checkout-dev
+DSS_GS_CHECKOUT_BUCKET=org-humancellatlas-dss-checkout-dev
+DSS_S3_SCALE_BUCKET=dss-scaletest
+DSS_GS_SCALE_BUCKET=dss-scaletest
+DSS_TERRAFORM_BACKEND_BUCKET_TEMPLATE="org-humancellatlas-dss-{account_id}-${DSS_DEPLOYMENT_STAGE}-terraform"
+API_DOMAIN_NAME=dss.dev.data.humancellatlas.org
 TARGET_URL=https://${API_DOMAIN_NAME}/v1/
-GOOGLE_APPLICATION_CREDENTIALS=~/workspace/credentials/ucsc/gcp-credentials.json
-XDG_CONFIG_HOME=/temp/.config
+DSS_SECRETS_STORE=dcp/dss
+GOOGLE_APPLICATION_CREDENTIALS=${DSS_SCALE_HOME}/gcp-credentials.json
+AWS_DEFAULT_REGION=us-east-1
+AWS_DEFAULT_OUTPUT=json
+AWS_SDK_LOAD_CONFIG=1 # Needed for Terraform to correctly use AWS assumed roles
+
+set +a
+
+
+#XDG_CONFIG_HOME=/temp/.config
