@@ -6,7 +6,7 @@ from locustfiles.common.dsslocust import DSSLocust, get_DSSClient
 from locustfiles.common import get_replica
 from locust import task, TaskSet, events
 
-from locustfiles.common.notifcation_server import NotificationServer
+from locustfiles.common.notification_server import NotificationServer
 
 
 class NotifyTaskSet(TaskSet):

@@ -1,15 +1,22 @@
 #!/usr/bin/env python
-
 import os
-import glob
-import json
+import sys
 import boto3
 import argparse
 from google.cloud.storage import Client
-GCP_PROJECT_ID = Client().project
 
+pkg_root = os.path.abspath(os.path.join(os.path.dirname(__file__), '..'))  # noqa
+sys.path.insert(0, pkg_root) # noqa
+
+from util import get_gcp_credentials_file
+
+
+GCP_PROJECT_ID = Client().project
 infra_root = os.path.abspath(os.path.dirname(__file__))
 
+
+if not os.environ.get('GOOGLE_APPLICATION_CREDENTIALS'):
+    os.environ['GOOGLE_APPLICATION_CREDENTIALS'] = get_gcp_credentials_file().name
 
 parser = argparse.ArgumentParser(description=__doc__)
 parser.add_argument("component")

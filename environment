@@ -18,12 +18,9 @@ DSS_TERRAFORM_BACKEND_BUCKET_TEMPLATE="org-humancellatlas-dss-{account_id}-${DSS
 API_DOMAIN_NAME=dss.dev.data.humancellatlas.org
 TARGET_URL=https://${API_DOMAIN_NAME}/v1/
 DSS_SECRETS_STORE=dcp/dss
-GOOGLE_APPLICATION_CREDENTIALS=${DSS_SCALE_HOME}/gcp-credentials.json
+GOOGLE_APPLICATION_CREDENTIALS_SECRETS_NAME=gcp-credentials.json
 AWS_DEFAULT_REGION=us-east-1
 AWS_DEFAULT_OUTPUT=json
 AWS_SDK_LOAD_CONFIG=1 # Needed for Terraform to correctly use AWS assumed roles
 
 set +a
-
-
-#XDG_CONFIG_HOME=/temp/.config

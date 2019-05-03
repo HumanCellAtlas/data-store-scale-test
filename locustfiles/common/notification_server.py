@@ -28,7 +28,7 @@ def notification_event_handler(path, request_type, request):
     global_stats.get(f"notification {notification_id}", request_type).log(0, 0)
 
 
-class NotifcationHandler(BaseHTTPRequestHandler):
+class NotificationHandler(BaseHTTPRequestHandler):
     def do_POST(self):
         notification_event.fire(path=self.path, request_type=self.command, request=self.request)
         self.send_response(200)
@@ -69,7 +69,7 @@ class NotificationServer:
     @classmethod
     def on_locust_start_hatching(cls, **kwargs):
         if cls.thread is None or not cls.thread.is_alive():
-            cls.server = HTTPServer(('', cls.port), NotifcationHandler)
+            cls.server = HTTPServer(('', cls.port), NotificationHandler)
             cls.thread = threading.Thread(target=cls.server.serve_forever)
             cls.thread.start()
 
