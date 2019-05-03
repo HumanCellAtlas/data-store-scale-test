@@ -14,7 +14,7 @@ locals {
 
 resource aws_s3_bucket dss_s3_scale_bucket {
   count = "${length(var.DSS_S3_CHECKOUT_BUCKET) > 0 ? 1 : 0}"
-  bucket = "${var.DSS_SCALE_BUCKET}"
+  bucket = "${var.DSS_S3_SCALE_BUCKET}"
   tags = "${local.common_tags}"
   lifecycle_rule {
     id = "failed multipart cleanup"
