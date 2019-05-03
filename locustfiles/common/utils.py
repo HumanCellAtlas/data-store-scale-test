@@ -102,4 +102,3 @@ def get_data(size):
         return data
     else:
         return data[:size]
-

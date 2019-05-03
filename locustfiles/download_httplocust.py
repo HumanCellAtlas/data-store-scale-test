@@ -26,8 +26,8 @@ class DownloadFixedTaskSet(TaskSet):
                         allow_redirects=False)
 
     def get_file(self, file_uuid):
-        resp = self.client.get( f"files/{file_uuid}", params={'replica': self.replica}, stream=False,
-                                allow_redirects=False)
+        resp = self.client.get(f"files/{file_uuid}", params={'replica': self.replica}, stream=False,
+                               allow_redirects=False)
         return resp
 
     @task(1)

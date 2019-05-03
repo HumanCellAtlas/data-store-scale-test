@@ -24,12 +24,12 @@ class UploadLocalTaskSet(TaskSet):
             except Exception as ex:
                 events.request_failure.fire(request_type='Post',
                                             name='Upload',
-                                            response_time=time.time()-start,
+                                            response_time=time.time() - start,
                                             exception=ex)
             else:
                 events.request_success.fire(request_type='Post',
                                             name='Upload',
-                                            response_time=time.time()-start,
+                                            response_time=time.time() - start,
                                             response_length=len(response))
                 self.bundles.append(response['bundle_uuid'])
 
@@ -39,10 +39,12 @@ class UploadLocalTaskSet(TaskSet):
 class UploadCloudTaskSet(TaskSet):
     @task(1)
     def upload_from_cloud(self):
-        src = "s3://org-humancellatlas-upload-dev/01ed0b2c-30c8-4a79-a564-e5f7c1e131f9"
+        # src = "s3://org-humancellatlas-upload-dev/01ed0b2c-30c8-4a79-a564-e5f7c1e131f9"
+        src = "s3://org-humancellatlas-upload-dev/00d9a765-6a90-4bac-bc75-6b7f6205367a/"
         staging_bucket = "org-humancellatlas-upload-dev"
 
         response = self.client.upload_from_cloud(src, staging_bucket)
+        return response
 
     # TODO delete bundles when done
 

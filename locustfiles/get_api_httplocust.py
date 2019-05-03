@@ -8,6 +8,7 @@ from locustfiles.common.queries import query_all, query_medium_files, query_larg
 def get_query():
     return choice([query_large_files, query_medium_files, query_all])
 
+
 class SearchActions(TaskSet):
     def _search(self):
         self.query = get_query()
@@ -17,7 +18,7 @@ class SearchActions(TaskSet):
     def _get_page(self):
         if self.page.links.get("next", {}).get("url"):
             return self.client.request('post', url=self.page.links["next"]["url"], json={'es_query': self.query},
-                                    name='search paged')
+                                       name='search paged')
         self.interrupt()
 
 
@@ -30,10 +31,8 @@ class HomePageTask(TaskSet):
         self.client.request('get', self.url)
 
 
-
 class HomePageUser(HttpLocust):
     min_wait = 500
     max_wait = 500
     task_set = HomePageTask
     weight = 4
-
