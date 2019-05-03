@@ -17,7 +17,7 @@ class SearchActions(TaskSet):
     def _get_page(self):
         if self.page.links.get("next", {}).get("url"):
             return self.client.request('post', url=self.page.links["next"]["url"], json={'es_query': self.query},
-                                    name='search paged')
+                                       name='search paged')
         self.interrupt()
 
 
@@ -55,4 +55,3 @@ class SearchUser(HttpLocust):
     max_wait = 3000
     task_set = SearchTaskSet
     weight = 4
-

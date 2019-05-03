@@ -14,14 +14,14 @@ class DownloadTaskSet(TaskSet):
     """
     def on_start(self):
         self.replica = get_replica()
-        self.resp_obj = self.client.post_search(es_query=query_medium_files, replica= self.replica)
+        self.resp_obj = self.client.post_search(es_query=query_medium_files, replica=self.replica)
 
     @task(1)
     def download_bundle(self):
         bundle = choice(self.resp_obj['results'])
         bundle_uuid, version = bundle['bundle_fqid'].split('.', 1)
         with TemporaryDirectory() as tmp_dir:
-            self.client.download(bundle_uuid,  self.replica, version=version, dest_name=tmp_dir)
+            self.client.download(bundle_uuid, self.replica, version=version, dest_name=tmp_dir)
 
     @task(1)
     def download_file_metadata(self):
@@ -45,7 +45,7 @@ class DownloadFixedTaskSet(TaskSet):
 
     def download(self, bundle_uuid, version):
         with TemporaryDirectory() as tmp_dir:
-            self.client.download(bundle_uuid,  self.replica, version=version, dest_name=tmp_dir)
+            self.client.download(bundle_uuid, self.replica, version=version, dest_name=tmp_dir)
 
     @task(1)
     def download_medium_sized_bundle(self):
@@ -71,9 +71,9 @@ class DownloadFixedTaskSet(TaskSet):
     def get_file_large(self):
         self.get_file(**file_large)
 
-
     def get_file(self, file_uuid):
         response = self.client.get_file(uuid=file_uuid, replica=self.replica, stream=True)
+        return response
 
     @task(1)
     def get_bundle_with_version(self):
@@ -91,4 +91,3 @@ class DownloadUser(DSSLocust):
     max_wait = 3000
     task_set = DownloadTaskSet
     weight = 2
-

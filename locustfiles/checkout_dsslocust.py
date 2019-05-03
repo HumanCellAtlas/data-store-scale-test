@@ -14,7 +14,7 @@ class CheckoutTaskSet(TaskSet):
 
         def on_start(self):
             self.replica = get_replica()
-            resp_obj = self.client.post_search(es_query=query_all, replica= self.replica)
+            resp_obj = self.client.post_search(es_query=query_all, replica=self.replica)
             bundle = choice(resp_obj['results'])
             bundle_uuid, version = bundle['bundle_fqid'].split('.', 1)
             checkout_output = self.client.post_bundles_checkout(uuid=bundle_uuid, replica=self.replica,
@@ -34,7 +34,7 @@ class CheckoutTaskSet(TaskSet):
         bundle = choice(resp_obj['results'])
         bundle_uuid, version = bundle['bundle_fqid'].split('.', 1)
         self.client.post_bundles_checkout(uuid=bundle_uuid, replica=self.replica,
-                                                            email='foo@example.com')
+                                          email='foo@example.com')
 
 
 class CheckoutFixedTaskSet(TaskSet):
@@ -45,8 +45,8 @@ class CheckoutFixedTaskSet(TaskSet):
         max_wait = 3000
 
         def on_start(self):
-            self.size='large'
-            self.bundle=bundle_large
+            self.size = 'large'
+            self.bundle = bundle_large
             self.replica = get_replica()
             checkout_output = self.client.post_bundles_checkout(uuid=self.bundle['bundle_uuid'],
                                                                 replica=self.replica,

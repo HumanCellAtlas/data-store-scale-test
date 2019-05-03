@@ -80,8 +80,3 @@ class NotificationServer:
 notification_event += notification_event_handler
 events.quitting += NotificationServer.on_quitting
 events.locust_start_hatching += NotificationServer.on_locust_start_hatching
-
-
-
-
-
