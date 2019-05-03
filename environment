@@ -22,5 +22,5 @@ GOOGLE_APPLICATION_CREDENTIALS_SECRETS_NAME=gcp-credentials.json
 AWS_DEFAULT_REGION=us-east-1
 AWS_DEFAULT_OUTPUT=json
 AWS_SDK_LOAD_CONFIG=1 # Needed for Terraform to correctly use AWS assumed roles
-
+XDG_CONFIG_HOME="/tmp/.config"
 set +a
