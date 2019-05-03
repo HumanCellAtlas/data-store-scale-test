@@ -8,7 +8,7 @@ sys.path.insert(0, pkg_root)  # noqa
 
 settings = create_settings(
     locustfile='locustfile.py',
-    host='https://dss.dev.data.humancellatlas.org/v1/',
+    host=os.environ['TARGET_URL'],
     num_clients=1,
     hatch_rate=1,
     run_time='30s'
