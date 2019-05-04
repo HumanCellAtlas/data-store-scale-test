@@ -1,29 +1,30 @@
 from locust import Locust  # import first to monkey patch for green threads
 import os
+import sys
 
 host = 'https://dss.dev.data.humancellatlas.org/v1/'
 os.environ['TARGET_URL'] = 'https://dss.dev.data.humancellatlas.org/v1/'
 
+pkg_root = os.path.abspath(os.path.join(os.path.dirname(__file__), '..'))  # noqa
+sys.path.insert(0, pkg_root)  # noqa
+
 import locustfiles
-from locustfiles import download_httplocust
 from locust import HttpLocust, events
 import unittest
 
 
 class test_users(unittest.TestCase):
-
     @classmethod
     def setUpClass(cls):
         cls.host = host
-
-    def setUp(self):
         events.locust_start_hatching.fire()
 
-    def tearDown(self):
+    @classmethod
+    def tearDownClass(cls):
         events.quitting.fire()
 
     def test_upload_user(self):
-        self.run_user(locustfiles.DSSLocust, locustfiles.UploadTaskSet)
+        self.run_user(locustfiles.DSSLocust, locustfiles.UploadLocalTaskSet)
 
     def test_download_user(self):
         self.run_user(locustfiles.DSSLocust, locustfiles.DownloadTaskSet, stop_timeout_=30)
@@ -37,8 +38,8 @@ class test_users(unittest.TestCase):
     def test_checkout_user(self):
         self.run_user(locustfiles.DSSLocust, locustfiles.CheckoutTaskSet)
 
-    def test_notify_user(self):
-        self.run_user(locustfiles.DSSLocust, locustfiles.NotifyTaskSet, stop_timeout_=40)
+    # def test_notify_user(self):
+    #     self.run_user(locustfiles.DSSLocust, locustfiles.NotifyTaskSet, stop_timeout_=40)
 
     def run_user(self, locust_type, task_set_, stop_timeout_=5, min_wait_=1000, max_wait_=3000):
         class user_class(locust_type):
