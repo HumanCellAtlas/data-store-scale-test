@@ -1,7 +1,6 @@
 # HCA DSS: Scalability Tests
 
-This is a suite of scalability tests for the [Data Storage System](github.com/HumanCellAtlas/data-store), which is the 
-storage platform used by the [Human Cell Atlas](https://www.humancellatlas.org/).
+This is a suite of scalability tests for the [Data Storage System](https://github.com/HumanCellAtlas/data-store/), which is the storage platform used by the [Human Cell Atlas](https://www.humancellatlas.org/).
  
 
 The tests use [locust](https://docs.locust.io/en/stable/what-is-locust.html) the load testing framework. Here are some 
