@@ -43,8 +43,7 @@ class UploadCloudTaskSet(TaskSet):
         src = "s3://org-humancellatlas-upload-dev/00d9a765-6a90-4bac-bc75-6b7f6205367a/"
         staging_bucket = "org-humancellatlas-upload-dev"
 
-        response = self.client.upload_from_cloud(src, staging_bucket)
-        return response
+        response = self.client.upload_from_cloud(src, staging_bucket)  # noqa
 
     # TODO delete bundles when done
 

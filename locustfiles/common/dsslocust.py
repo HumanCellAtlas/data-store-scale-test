@@ -30,6 +30,7 @@ class UUIDFilter(logging.Filter):
 # fh.formatter = logging.Formatter(fmt="{asctime}: {message}", datefmt="%Y-%m-%d %H:%M:%S", style='{')
 # logger.addHandler(fh)
 
+
 class OAuth2SessionMod(OAuth2Session, HttpSession):
     pass
 
@@ -40,105 +41,82 @@ def upload_to_cloud_lru(file_handles, staging_bucket, replica, from_cloud=True):
 
 
 class DSSTestClient(DSSClient):
-    def get_session(self):
-        if self._session is None:
-            self._session = HttpSession(self.config[self.__class__.__name__].host, **self._session_kwargs)
-            self._session.headers.update({"User-Agent": self.__class__.__name__})
-            self._set_retry_policy(self._session)
-        return self._session
 
-    # def get_authenticated_session(self):
-    #     if self._authenticated_session is None:
-    #         oauth2_client_data = self.application_secrets["installed"]
-    #         if 'GOOGLE_APPLICATION_CREDENTIALS' in os.environ:
-    #             token, expires_at = self._get_jwt_from_service_account_credentials()
-    #             self._authenticated_session = OAuth2SessionMod(client_id=oauth2_client_data["client_id"],
-    #                                                            token=dict(access_token=token),
-    #                                                            **self._session_kwargs)
-    #         else:
-    #             msg = ('Please set the GOOGLE_APPLICATION_CREDENTIALS environment variable')
-    #             raise Exception(msg.format(prog=self.__module__.replace(".", " ")))
-    #         self._authenticated_session.headers.update({"User-Agent": self.__class__.__name__})
-    #         self._set_retry_policy(self._authenticated_session)
-    #     return self._authenticated_session
-
-    def get_authenticated_session(self):
-        super()
+    # def download(self, bundle_uuid, replica, version="", download_dir="",
+    #              metadata_files=('*',), data_files=('*',),
+    #              num_retries=10, min_delay_seconds=0.25, name=None):
+    #     super()
 
     def download(self, bundle_uuid, replica, version="", download_dir="",
                  metadata_files=('*',), data_files=('*',),
                  num_retries=10, min_delay_seconds=0.25, name=None):
-        super()
-    # def download(self, bundle_uuid, replica, version="", download_dir="",
-    #              metadata_files=('*',), data_files=('*',),
-    #              num_retries=10, min_delay_seconds=0.25, name=None):
-    #     """
-    #     Download a bundle and save it to the local filesystem as a directory.
-    #     """
-    #     if not download_dir:
-    #         dest_name = bundle_uuid
-    #
-    #     bundle = self.get_bundle(uuid=bundle_uuid, replica=replica,
-    #                              version=version if version else None, name=name)["bundle"]
-    #
-    #     if not os.path.isdir(dest_name):
-    #         os.makedirs(dest_name)
-    #
-    #     for file_ in bundle["files"]:
-    #         file_uuid = file_["uuid"]
-    #         filename = file_.get("name", file_uuid)
-    #
-    #         file_path = os.path.join(dest_name, filename)
-    #
-    #         with open(file_path, "wb") as fh:
-    #             while True:
-    #                 response = self.get_file._request(
-    #                     dict(uuid=file_uuid, replica=replica),
-    #                     stream=True,
-    #                     headers={
-    #                         'Range': "bytes={}-".format(fh.tell())
-    #                     },
-    #                     name=name
-    #                 )
-    #                 try:
-    #                     if not response.ok:
-    #                         break
-    #
-    #                     consume_bytes = int(fh.tell())
-    #                     server_start = 0
-    #                     content_range_header = response.headers.get('Content-Range', None)
-    #                     if content_range_header is not None:
-    #                         cre = re.compile("bytes (\d+)-(\d+)")
-    #                         mo = cre.search(content_range_header)
-    #                         if mo is not None:
-    #                             server_start = int(mo.group(1))
-    #
-    #                     consume_bytes -= server_start
-    #                     assert consume_bytes >= 0
-    #                     if server_start > 0 and consume_bytes == 0:
-    #                         pass
-    #                     elif consume_bytes > 0:
-    #                         while consume_bytes > 0:
-    #                             bytes_to_read = min(consume_bytes, 1024*1024)
-    #                             content = response.iter_content(chunk_size=bytes_to_read)
-    #                             chunk = next(content)
-    #                             if chunk:
-    #                                 consume_bytes -= len(chunk)
-    #
-    #                     for chunk in response.iter_content(chunk_size=1024*1024):
-    #                         if chunk:
-    #                             fh.write(chunk)
-    #                     break
-    #                 finally:
-    #                     response.close()
-    #     return {}
+        """
+        Download a bundle and save it to the local filesystem as a directory.
+        """
+        if not download_dir:
+            dest_name = bundle_uuid
+
+        bundle = self.get_bundle(uuid=bundle_uuid, replica=replica,
+                                 version=version if version else None, name=name)["bundle"]
+
+        if not os.path.isdir(dest_name):
+            os.makedirs(dest_name)
+
+        for file_ in bundle["files"]:
+            file_uuid = file_["uuid"]
+            filename = file_.get("name", file_uuid)
+
+            file_path = os.path.join(dest_name, filename)
+
+            with open(file_path, "wb") as fh:
+                while True:
+                    response = self.get_file._request(
+                        dict(uuid=file_uuid, replica=replica),
+                        stream=True,
+                        headers={
+                            'Range': "bytes={}-".format(fh.tell())
+                        },
+                        name=name
+                    )
+                    try:
+                        if not response.ok:
+                            break
+
+                        consume_bytes = int(fh.tell())
+                        server_start = 0
+                        content_range_header = response.headers.get('Content-Range', None)
+                        if content_range_header is not None:
+                            cre = re.compile("bytes (\d+)-(\d+)")
+                            mo = cre.search(content_range_header)
+                            if mo is not None:
+                                server_start = int(mo.group(1))
+
+                        consume_bytes -= server_start
+                        assert consume_bytes >= 0
+                        if server_start > 0 and consume_bytes == 0:
+                            pass
+                        elif consume_bytes > 0:
+                            while consume_bytes > 0:
+                                bytes_to_read = min(consume_bytes, 1024*1024)
+                                content = response.iter_content(chunk_size=bytes_to_read)
+                                chunk = next(content)
+                                if chunk:
+                                    consume_bytes -= len(chunk)
+
+                        for chunk in response.iter_content(chunk_size=1024*1024):
+                            if chunk:
+                                fh.write(chunk)
+                        break
+                    finally:
+                        response.close()
+        return {}
 
     def upload_from_cloud(self, src_dir, staging_bucket, replica='aws', timeout_seconds=1200):
         bundle_uuid = str(uuid.uuid4())
         version = datetime.utcnow().strftime("%Y-%m-%dT%H%M%S.%fZ")
         creator_uid = 9889
 
-        file_uuids, uploaded_keys = upload_to_cloud_lru(src_dir, staging_bucket=staging_bucket, replica=replica,
+        file_uuids, uploaded_keys, abs_path = upload_to_cloud_lru(src_dir, staging_bucket=staging_bucket, replica=replica,
                                                         from_cloud=True)
 
         filenames = list(map(os.path.basename, uploaded_keys))
@@ -158,8 +136,7 @@ class DSSTestClient(DSSClient):
                 bundle_uuid=bundle_uuid,
                 version=version,
                 creator_uid=creator_uid,
-                source_url=source_url,
-                name=f"put file: {source_url}",
+                source_url=source_url
             ))
             files_uploaded.append(dict(name=filename, version=version, uuid=file_uuid, creator_uid=creator_uid))
 
