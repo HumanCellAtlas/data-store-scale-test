@@ -54,3 +54,9 @@ class UploadUser(DSSLocust):
     max_wait = 500
     task_set = [UploadLocalTaskSet, UploadCloudTaskSet]
     weight = 1
+
+    def use_scale_settings(self):
+        self.min_wait = 100
+        self.max_wait = 100
+        self.task_set = UploadCloudTaskSet
+        self.weight = 1

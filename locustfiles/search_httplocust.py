@@ -55,3 +55,9 @@ class SearchUser(HttpLocust):
     max_wait = 3000
     task_set = SearchTaskSet
     weight = 4
+
+    def use_scale_settings(self):
+        self.min_wait = 250
+        self.max_wait = 500
+        self.task_set = SearchTaskSet
+        self.weight = 4
