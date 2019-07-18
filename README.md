@@ -1,7 +1,6 @@
 # HCA DSS: Scalability Tests
 
 This is a suite of scalability tests for the [Data Storage System](https://github.com/HumanCellAtlas/data-store/), which is the storage platform used by the [Human Cell Atlas](https://www.humancellatlas.org/).
- 
 
 The tests use [locust](https://docs.locust.io/en/stable/what-is-locust.html) the load testing framework. Here are some 
 resources for working with locust.
@@ -32,10 +31,13 @@ To run using docker you:
 - setup environment variables
 
 #### Running from CLI
-`$ locust -f ./scale_tests/upload_cloud.py --host=local:1234 --no-web --client=100 --hatch-rate=50 --run-time=10s --csv=./scale_tests/upload`
+
+    $ locust -f ./scale_tests/upload_cloud.py --host=$HOST --no-web --client=100 --hatch-rate=50 --run-time=10s --csv=./scale_tests/upload
+
+Where `$HOST` is the base URL of the DSS endpoint you want to hit, e.g. `https://dss.dev.data.humancellatlas.org/v1/`. (The tests will look for `${HOST}swagger.yaml`.)
 
 #### Environment Variables
-- `TARGET_URL` - specifies the endpoint for unittests to target. Example: http://localhost:1234
+- `TARGET_URL` - specifies the endpoint for unittests to target (e.g. `https://dss.dev.data.humancellatlas.org/v1/`).
 - `GOOGLE_APPLICATION_CREDENTIALS` - A file path to google application credentials Used to access endpoints that require Auth.
 
 #### Modifying the Tests
