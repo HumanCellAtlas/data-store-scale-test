@@ -32,6 +32,9 @@ To run using docker you:
 
 #### Running from CLI
 
+Using Python 3.6:
+
+    $ pip install -r requirements.txt
     $ locust -f ./scale_tests/upload_cloud.py --host=$HOST --no-web --client=100 --hatch-rate=50 --run-time=10s --csv=./scale_tests/upload
 
 Where `$HOST` is the base URL of the DSS endpoint you want to hit, e.g. `https://dss.dev.data.humancellatlas.org/v1/`. (The tests will look for `${HOST}swagger.yaml`.)
