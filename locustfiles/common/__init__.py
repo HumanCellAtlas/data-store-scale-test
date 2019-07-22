@@ -27,23 +27,24 @@ def dss_task(name):
     def decorator_dss_task(f):
         @functools.wraps(f)
         def wrapper_dss_task(*args, **kwargs):
-            try:
-                req = f(*args, **kwargs)
-                if req.ok:
-                    events.request_success.fire(request_type="dss", name=name,
-                                                response_time=req.elapsed.microseconds / 1000,
-                                                response_length=len(req.content))
-                else:
-                    try:
-                        req.raise_for_status()
-                    except requests.RequestException as e:
-                        events.request_failure.fire(request_type="dss", name=name,
-                                                    response_time=req.elapsed.microseconds / 1000,
-                                                    response_length=len(req.content),
-                                                    exception=e)
-            except Exception as e:
-                events.request_failure.fire(request_type="dss", name=name,
-                                            response_time=0, response_length=0,
-                                            exception=e)
+            # We could use a try/catch block here but then we miss out
+            # on some really nice tracebacks.
+            req = f(*args, **kwargs)
+            fire_for_request(req, name)
         return wrapper_dss_task
     return decorator_dss_task
+
+
+def fire_for_request(req, name):
+    if req.ok:
+        events.request_success.fire(request_type="dss", name=name,
+                                    response_time=req.elapsed.microseconds / 1000,
+                                    response_length=len(req.content))
+    else:
+        try:
+            req.raise_for_status()
+        except requests.RequestException as e:
+            events.request_failure.fire(request_type="dss", name=name,
+                                        response_time=req.elapsed.microseconds / 1000,
+                                        response_length=len(req.content),
+                                        exception=e)

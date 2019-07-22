@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 from random import choices
 from tempfile import NamedTemporaryFile
 from typing import Any, Tuple
@@ -5,6 +6,8 @@ import typing
 from urllib.parse import SplitResult, urlencode, urlunsplit
 
 from gevent import os
+import hca.dss
+import jsongen.generator
 from jsongen import HCAJsonGenerator
 
 from locustfiles.common import ASYNC_COPY_THRESHOLD
@@ -90,6 +93,27 @@ def generate_data(dir, size=ASYNC_COPY_THRESHOLD):
     with NamedTemporaryFile(dir=dir, delete=False, suffix=".bin") as fh:
         fh.write(get_data(size))
         fh.flush()
+
+
+col_schema = hca.dss.DSSClient().swagger_spec['definitions']['Collection']
+# We need to patch the schema a little to generate fake collections.
+col_schema['properties']['version'] = {
+    'description': 'DSS_VERSION',
+    'type': 'string',
+    # A faux-DSS_VERSION with some constraints to save some pain
+    'pattern': '^2019-(1[012]|0[1-9])-(0[1-9]|([1-2][0-8]))T([0-1][0-9]|2[0-3])'
+               '([0-5][0-9])([0-5][0-9])\.([0-9]{6})Z$'
+}
+del col_schema['properties']['contents']  # we need to overwrite with real contents anyway
+col_schema['required'] = ['name', 'description', 'details', 'version']  # always generate
+
+
+def generate_collection():
+    """
+    Generates a fake collection (but missing `contents`).
+    """
+    json_gen = jsongen.generator.JsonGenerator()
+    return json_gen.generate_json(col_schema)
 
 
 data = b''
