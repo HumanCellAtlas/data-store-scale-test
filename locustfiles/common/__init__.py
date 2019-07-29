@@ -38,13 +38,13 @@ def dss_task(name):
 def fire_for_request(req, name):
     if req.ok:
         events.request_success.fire(request_type="dss", name=name,
-                                    response_time=req.elapsed.microseconds / 1000,
+                                    response_time=req.elapsed.total_seconds() * 1000,
                                     response_length=len(req.content))
     else:
         try:
             req.raise_for_status()
         except requests.RequestException as e:
             events.request_failure.fire(request_type="dss", name=name,
-                                        response_time=req.elapsed.microseconds / 1000,
+                                        response_time=req.elapsed.total_seconds() * 1000,
                                         response_length=len(req.content),
                                         exception=e)
