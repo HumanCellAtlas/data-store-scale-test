@@ -3,3 +3,4 @@ gevent == 1.2.2
 invokust
 git+git://github.com/HumanCellAtlas/dcp-cli#egg=hca
 git+git://github.com/HumanCellAtlas/dcp-pyjsongen@master#egg=pyjsongen
+werkzeug>=3.0.1 # not directly required, pinned by Snyk to avoid a vulnerability
